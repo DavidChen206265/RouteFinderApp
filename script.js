@@ -72,3 +72,5 @@ map.addInteraction('map-click', {
 function onDragEnd(marker) {
     console.log(marker.getLngLat().lng + ', ' + marker.getLngLat().lat);
 } // onDragEnd
+
+// commit test
