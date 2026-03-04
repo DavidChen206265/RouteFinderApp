@@ -21,8 +21,12 @@
 </head>
 
 <body>
-  <div id="map"></div>
-  <script type="module" src="/script.js"></script>
+  <div id="everythingbox">
+    <input id="locInput" type="text" value="Enter Location">
+    <button type="button" onclick="switchMode()" id="modeButton">🧭</button>
+    <div id="map"></div>
+    <button type="button" onclick="findRoute()" id="enterButton">Calculate Route</button>
+  </div>
 </body>
 
 </html>
