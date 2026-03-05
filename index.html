@@ -25,8 +25,18 @@
     <input id="locInput" type="text" value="Enter Location">
     <button type="button" onclick="switchMode()" id="modeButton">🧭</button>
     <button type="button" onclick="getLocation()" id="locationButton">Current <br> Location</button>
+    
     <div id="map"></div>
     <button type="button" onclick="findRoute()" id="enterButton">Calculate Route</button>
+    <div class="dropdown">
+      <button class="dropbtn">Method of Transportation</button>
+      <div class="dropdown-content">
+        <div id="walk" onclick="setMethod('walk')">Walk</div>
+        <div id="drive" onclick="setMethod('drive')">Drive</div>
+        <div id="bus" onclick="setMethod('bus')">Bus</div>
+        <div id="bike" onclick="setMethod('bike')">Bike</div>
+      </div>
+    </div>
   </div>
 </body>
 
