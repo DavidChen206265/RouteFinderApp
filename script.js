@@ -1,4 +1,6 @@
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+apiKeyMapbox = '';
+apiKeyGeoapify = '';
+mapboxgl.accessToken = apiKeyMapbox;
 const map = new mapboxgl.Map({
     container: 'map', // container ID
     center: [-123.3742906693874, 48.45312301560749], // starting position [lng, lat]. Note that lat must be set between -90 and 90
@@ -53,9 +55,29 @@ map.addInteraction('map-click', {
                     .addTo(map);
                 navMarkerDestinationPoint.on('dragend', (e) => onDragEnd(navMarkerDestinationPoint));
             }
-            else {
+            else { // if both markers are on the map
+
+                // delete both markers 
                 navMarkerStartingPoint.remove();
                 navMarkerDestinationPoint.remove();
+
+                // remove map layers and sources
+                if (map.getLayer('route-layer')) {
+                    map.removeLayer('route-layer');
+                }
+            
+                if (map.getLayer('points-layer')) {
+                    map.removeLayer('points-layer');
+                }
+
+                if (map.getSource('route')) {
+                    map.removeSource('route');
+                }
+            
+                if (map.getSource('points')) {
+                    map.removeSource('points');
+                }
+
                 navMarkerStartingPoint = new mapboxgl.Marker({
                     color: '#0000FF',
                     draggable: 'true'
@@ -73,4 +95,255 @@ function onDragEnd(marker) {
     console.log(marker.getLngLat().lng + ', ' + marker.getLngLat().lat);
 } // onDragEnd
 
-// commit test
+
+function findRoute() {
+
+    // return if starting point or destination is not selected
+    if (!navMarkerStartingPoint || !navMarkerDestinationPoint) return;
+
+    let startingPoint = navMarkerStartingPoint.getLngLat().lat + ',' + navMarkerStartingPoint.getLngLat().lng;
+    let destinationPoint = navMarkerDestinationPoint.getLngLat().lat + ',' + navMarkerDestinationPoint.getLngLat().lng;
+    let mode = "drive";
+    const requestOptions = {
+        method: "GET",
+        redirect: "follow"
+    };
+
+    fetch("https://api.geoapify.com/v1/routing?waypoints=" + startingPoint + "|" + destinationPoint + "&mode=" + mode + "&apiKey=" + apiKeyGeoapify, requestOptions).then(res => res.json()).then(routeResult => {
+        routeData = routeResult;
+        const steps = [];
+        const instructions = [];
+        const stepPoints = [];
+
+        routeData.features[0].properties.legs.forEach((leg, legIndex) => {
+            const legGeometry = routeData.features[0].geometry.coordinates[legIndex];
+            leg.steps.forEach((step, index) => {
+                if (step.instruction) {
+                    instructions.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": legGeometry[step.from_index]
+                        },
+                        properties: {
+                            text: step.instruction.text
+                        }
+                    });
+                }
+
+                if (index !== 0) {
+                    stepPoints.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": legGeometry[step.from_index]
+                        },
+                        properties: step
+                    })
+                }
+
+                if (step.from_index === step.to_index) {
+                    // destination point
+                    return;
+                }
+
+                const stepGeometry = legGeometry.slice(step.from_index, step.to_index + 1);
+                steps.push({
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": stepGeometry
+                    },
+                    properties: step
+                });
+            });
+        });
+
+        routeStepsData = {
+            type: "FeatureCollection",
+            features: steps
+        }
+
+        instructionsData = {
+            type: "FeatureCollection",
+            features: instructions
+        }
+
+        stepPointsData = {
+            type: "FeatureCollection",
+            features: stepPoints
+        }
+
+        map.addSource('route', {
+            type: 'geojson',
+            data: routeData
+        });
+
+        map.addSource('points', {
+            type: 'geojson',
+            data: instructionsData
+        });
+
+        addLayerEvents();
+        drawRoute();
+    }, err => console.log(err));
+
+    
+} // findRoute
+
+function drawRoute() {
+    if (!routeData) {
+        return;
+    }
+
+    if (map.getLayer('route-layer')) {
+        map.removeLayer('route-layer')
+    }
+
+    if (map.getLayer('points-layer')) {
+        map.removeLayer('points-layer')
+    }
+
+    if (document.getElementById("showDetails").checked) {
+        map.getSource('route').setData(routeStepsData);
+        map.addLayer({
+            'id': 'route-layer',
+            'type': 'line',
+            'source': 'route',
+            'layout': {
+                'line-join': "round",
+                'line-cap': "round"
+            },
+            'paint': {
+                'line-color': [
+                    'match',
+                    ['get', 'road_class'],
+                    'motorway',
+                    '#009933',
+                    'trunk',
+                    '#00cc99',
+                    'primary',
+                    '#009999',
+                    'secondary',
+                    '#00ccff',
+                    'tertiary',
+                    '#9999ff',
+                    'residential',
+                    '#9933ff',
+                    'service_other',
+                    '#ffcc66',
+                    'unclassified',
+                    '#666699',
+                    /* other */
+                    '#666699'
+                ],
+                'line-width': 8
+            }
+        });
+
+        map.getSource('points').setData(stepPointsData);
+        map.addLayer({
+            'id': 'points-layer',
+            'type': 'circle',
+            'source': 'points',
+            'paint': {
+                'circle-radius': 4,
+                'circle-color': "#ddd",
+                'circle-stroke-color': "#aaa",
+                'circle-stroke-width': 1,
+            }
+        });
+    } else {
+        map.getSource('route').setData(routeData);
+        map.addLayer({
+            'id': 'route-layer',
+            'type': 'line',
+            'source': 'route',
+            'layout': {
+                'line-cap': "round",
+                'line-join': "round"
+            },
+            'paint': {
+                'line-color': "#6084eb",
+                'line-width': 8
+            },
+            'filter': ['==', '$type', 'LineString']
+        });
+
+        map.getSource('points').setData(instructionsData);
+        map.addLayer({
+            'id': 'points-layer',
+            'type': 'circle',
+            'source': 'points',
+            'paint': {
+                'circle-radius': 4,
+                'circle-color': "#fff",
+                'circle-stroke-color': "#aaa",
+                'circle-stroke-width': 1,
+            }
+        });
+    }
+}
+
+function addLayerEvents() {
+    map.on('mouseenter', 'route-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'route-layer', () => {
+        map.getCanvas().style.cursor = '';
+    });
+
+    map.on('mouseenter', 'points-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'points-layer', () => {
+        map.getCanvas().style.cursor = '';
+    });
+
+    map.on('click', 'route-layer', (e) => {
+        if (document.getElementById("showDetails").checked) {
+            const stepData = e.features[0].properties;
+            const propertiesToShow = ["surface", "elevation", "elevation_gain"];
+            const dataToShow = {};
+            propertiesToShow.forEach(property => {
+                if (stepData[property] || stepData[property] === 0) {
+                    dataToShow[property] = stepData[property];
+                }
+            });
+
+            showPopup(dataToShow, e.lngLat);
+        } else {
+            showPopup({
+                distance: `${e.features[0].properties.distance} m`,
+                time: `${e.features[0].properties.time} s`
+            }, e.lngLat);
+        }
+        e.preventDefault();
+    })
+
+    map.on('click', 'points-layer', (e) => {
+        const properties = e.features[0].properties;
+        const point = e.features[0].geometry.coordinates;
+
+        if (properties.text) {
+            popup.setText(properties.text);
+            popup.setLngLat(point);
+            popup.addTo(map);
+            e.preventDefault();
+        }
+    });
+}
+
+
+function showPopup(data, lngLat) {
+    let popupHtml = Object.keys(data).map(key => {
+        return `<div class="popup-property-container">
+                    <span class="popup-property-label">${key}: </span>
+          <span class="popup-property-value">${data[key]}</span>
+        </div>`
+    }).join('');
+
+    popup.setLngLat(lngLat).setHTML(popupHtml).addTo(map);
+}
