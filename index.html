@@ -21,7 +21,9 @@
 </head>
 
 <body>
+  <div id="map"></div>
   <div id="everythingbox">
+
     <input id="locInput" type="text" value="Enter Location">
     <button type="button" onclick="switchMode()" id="modeButton">🧭</button>
     <button type="button" onclick="redirectToUserLocation()" id="locationButton">Current <br> Location</button>
@@ -33,23 +35,22 @@
       Show route details
     </div>
 
-    <div id="map"></div>
+    
     <button type="button" onclick="findRoute()" id="enterButton">Calculate Route</button>
     
 
 
-    <div class="dropdown">
-      <button class="dropbtn">Method of Transportation</button>
-      <div class="dropdown-content">
-        <div id="walk" onclick="setMethod('walk')">Walk</div>
-        <div id="drive" onclick="setMethod('drive')">Drive</div>
-        <div id="bus" onclick="setMethod('transit')">Bus</div>
-        <div id="bike" onclick="setMethod('bicycle')">Bike</div>
-      </div>
+
+    <div class="dropdown-content">
+      <div id="walk" onclick="setMethod('walk')">Walk</div>
+      <div id="drive" onclick="setMethod('drive')">Drive</div>
+      <div id="bus" onclick="setMethod('transit')">Bus</div>
+      <div id="bike" onclick="setMethod('bicycle')">Bike</div>
     </div>
 
-  </div>
 
+  </div>
+  
 
 </body>
 

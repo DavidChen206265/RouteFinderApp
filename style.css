@@ -2,21 +2,21 @@ body {
     margin: 0;
     padding: 0; 
     background-color:gray;
-    padding-top:10px;
+    font-family:helvetica, arial, sans-serif;
 }
 #map { 
     position: absolute; 
-    border-radius:10px; 
-    width:95%; 
-    top: 95px; 
-    bottom: 10px;
-    margin-left:2.5%;
+    width:100%; 
+    top:0; 
+    bottom:0;
+
 }
 #locInput{
     border-radius:5px;
     width:80%;
     height:70px;
     border:none;
+    transform:translate(0,0);
 }
 #modeButton{
     border-radius:5px;
@@ -25,6 +25,7 @@ body {
     margin:none;
     border:none;
     background-color:rgb(89, 130, 255);
+    transform:translate(0,0);
 }
 #modeButton:hover {
     background-color:rgb(59, 92, 190);
@@ -45,7 +46,6 @@ body {
 
 #everythingbox{
     text-align:center;
-    overflow-y:hidden;
 }
 #enterButton{
     background-color:rgb(89, 130, 255);
@@ -56,69 +56,81 @@ body {
     text-align:center;
     display:block;
     position:absolute;
-    transform:translate(93vw, 80vh);
+    transform:translate(99vw);
 }
+
+
+.dropdown-content{
+    transform:translateY(-10px);
+    display:grid;
+    grid-template-areas: 'walk drive bus bike';
+    gap:10px;
+    width:min-content;
+    margin-left:8%;
+}
+#walk{
+    grid-area:walk;
+    display:inline-block;
+    color:white;
+    background-color:rgb(89, 130, 255);
+    border-radius:15px;
+    height:30px;
+    width:150px;
+    font-size:20px;
+    padding-top:5px;
+}
+#drive{
+    grid-area:drive;
+    display:inline-block;
+    color:white;
+    background-color:rgb(89, 130, 255);
+    border-radius:15px;
+    height:30px;
+    width:150px;
+    font-size:20px;
+    padding-top:5px;
+}
+#bus{
+    grid-area:bus;
+    display:inline-block;
+    color:white;
+    background-color:rgb(89, 130, 255);
+    border-radius:15px;
+    height:30px;
+    width:150px;
+    font-size:20px;
+    padding-top:5px;
+}
+#bike{
+    grid-area:bike;
+    display:inline-block;
+    color:white;
+    background-color:rgb(89, 130, 255);
+    border-radius:15px;
+    height:30px;
+    width:150px;
+    font-size:20px;
+    padding-top:5px;
+}
+
+
 @media (max-width: 800px){
     #locInput{
         width:60%;
+    }
+    .dropdown-content{
+        grid-template-areas: 'walk drive' 'bus bike';
+        margin-left:5%;
     }
 }
 
 @keyframes slidein{
     100%{
-        transform:translate(93vw, 80vh);
+        transform:translate(93vw);
     }
 }
 @keyframes slideout{
     100%{
-        transform:translate(101vw, 80vh);
+        transform:translate(101vw);
     }
 }
-
-.dropdown {
-    position: absolute;
-    z-index:0;
-    transform:translate(50px, 20px);
-    border-radius:5px;
-  }
-  
-  /* Style the dropdown button */
-  .dropbtn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 16px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Dropdown content */
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  }
-  
-  /* Links inside dropdown content */
-  .dropdown-content div {
-    color: black;
-    padding: 12px 16px;
-    display: block;
-  }
-  
-  /* Change color of dropdown links on hover */
-  .dropdown-content div:hover {
-    background-color: #f1f1f1
-  }
-  
-  /* Show the dropdown content on hover */
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  
-  /* Change background color of dropdown button on hover */
-  .dropdown:hover .dropbtn {
-    background-color: #3e8e41;
-  }
