@@ -1,19 +1,36 @@
-apiKeyMapbox = '';
-apiKeyGeoapify = '';
+
 mapboxgl.accessToken = apiKeyMapbox;
+
+// map initialization
 const map = new mapboxgl.Map({
     container: 'map', // container ID
     center: [-123.3742906693874, 48.45312301560749], // starting position [lng, lat]. Note that lat must be set between -90 and 90
     zoom: 15 // starting zoom
 });
 
-let interactionMode = "nav"; // modes: "view" and "nav"
+// popup initialization
+const popup = new mapboxgl.Popup();
 
+// modes: "view" and "nav"
+let interactionMode = "view";
+
+// user location
+let userLat = 0;
+let userLon = 0;
+
+// markers
 let viewMarker;
 let navMarkerStartingPoint;
 let navMarkerDestinationPoint;
 
-map.addInteraction('map-click', {
+// navigation mode: "drive", "walk", "bicycle", "transit"
+let navigationMode = "bicycle";
+
+// control to the map for zooming in and out
+map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+// mouse click event handler for the map
+map.addInteraction('click-event', {
     type: 'click',
     handler: (e) => {
         console.log(`Clicked at: ${e.lngLat.lng}, ${e.lngLat.lat}`);
@@ -23,20 +40,12 @@ map.addInteraction('map-click', {
         // if the user is in view mode, create a red marker that can be dragged to a new location
         if (interactionMode === "view") {
 
-            if (viewMarker) viewMarker.remove();
-            viewMarker = new mapboxgl.Marker({
-                color: '#FF0000',
-                draggable: 'true'
-            })
-                .setLngLat([e.lngLat.lng, e.lngLat.lat])
-                .addTo(map);
-            viewMarker.on('dragend', (e) => onDragEnd(viewMarker));
+            placeViewMarker(e.lngLat.lng, e.lngLat.lat);
 
         } else if (interactionMode === "nav") {
 
             // if the user is in navigation mode, create a blue marker for the starting point and a green marker for the destination point
             // if both markers already exist, remove them and create a new blue marker for the starting point
-
             if (!navMarkerStartingPoint) {
                 navMarkerStartingPoint = new mapboxgl.Marker({
                     color: '#0000FF',
@@ -55,17 +64,15 @@ map.addInteraction('map-click', {
                     .addTo(map);
                 navMarkerDestinationPoint.on('dragend', (e) => onDragEnd(navMarkerDestinationPoint));
             }
-            else { // if both markers are on the map
-
-                // delete both markers 
-                navMarkerStartingPoint.remove();
-                navMarkerDestinationPoint.remove();
+            else {
+                // if both markers are on the map
+                cleanMap();
 
                 // remove map layers and sources
                 if (map.getLayer('route-layer')) {
                     map.removeLayer('route-layer');
                 }
-            
+
                 if (map.getLayer('points-layer')) {
                     map.removeLayer('points-layer');
                 }
@@ -73,7 +80,7 @@ map.addInteraction('map-click', {
                 if (map.getSource('route')) {
                     map.removeSource('route');
                 }
-            
+
                 if (map.getSource('points')) {
                     map.removeSource('points');
                 }
@@ -91,11 +98,26 @@ map.addInteraction('map-click', {
     } // handler
 });
 
+// main logic starts here
+window.onload = async () => {
+    try {
+        await updateUserLocation();
+        if (userLat && userLon) {
+            flyToLocation(userLon, userLat);
+            placeViewMarker(userLon, userLat);
+        }
+    } catch (error) {
+        console.warn("Location access failed:", error.message);
+
+        // continue without location
+    }
+} // window.onload
+
 function onDragEnd(marker) {
     console.log(marker.getLngLat().lng + ', ' + marker.getLngLat().lat);
 } // onDragEnd
 
-
+// find a route between the starting point and the destination point
 function findRoute() {
 
     // return if starting point or destination is not selected
@@ -103,13 +125,12 @@ function findRoute() {
 
     let startingPoint = navMarkerStartingPoint.getLngLat().lat + ',' + navMarkerStartingPoint.getLngLat().lng;
     let destinationPoint = navMarkerDestinationPoint.getLngLat().lat + ',' + navMarkerDestinationPoint.getLngLat().lng;
-    let mode = "drive";
     const requestOptions = {
         method: "GET",
         redirect: "follow"
     };
 
-    fetch("https://api.geoapify.com/v1/routing?waypoints=" + startingPoint + "|" + destinationPoint + "&mode=" + mode + "&apiKey=" + apiKeyGeoapify, requestOptions).then(res => res.json()).then(routeResult => {
+    fetch("https://api.geoapify.com/v1/routing?waypoints=" + startingPoint + "|" + destinationPoint + "&mode=" + navigationMode + "&apiKey=" + apiKeyGeoapify, requestOptions).then(res => res.json()).then(routeResult => {
         routeData = routeResult;
         const steps = [];
         const instructions = [];
@@ -188,7 +209,7 @@ function findRoute() {
         drawRoute();
     }, err => console.log(err));
 
-    
+
 } // findRoute
 
 function drawRoute() {
@@ -282,8 +303,8 @@ function drawRoute() {
                 'circle-stroke-width': 1,
             }
         });
-    }
-}
+    } // if
+} // drawRoute
 
 function addLayerEvents() {
     map.on('mouseenter', 'route-layer', () => {
@@ -302,10 +323,10 @@ function addLayerEvents() {
         map.getCanvas().style.cursor = '';
     });
 
-    map.on('click', 'route-layer', (e) => {
+    map.on('mouseenter', 'route-layer', (e) => {
         if (document.getElementById("showDetails").checked) {
             const stepData = e.features[0].properties;
-            const propertiesToShow = ["surface", "elevation", "elevation_gain"];
+            const propertiesToShow = ["distance", "time", "surface", "elevation", "elevation_gain"];
             const dataToShow = {};
             propertiesToShow.forEach(property => {
                 if (stepData[property] || stepData[property] === 0) {
@@ -336,7 +357,6 @@ function addLayerEvents() {
     });
 }
 
-
 function showPopup(data, lngLat) {
     let popupHtml = Object.keys(data).map(key => {
         return `<div class="popup-property-container">
@@ -346,4 +366,98 @@ function showPopup(data, lngLat) {
     }).join('');
 
     popup.setLngLat(lngLat).setHTML(popupHtml).addTo(map);
+} // showPopup
+
+// switch between view mode and navigation mode
+function switchMode() {
+
+    // remove all markers, layers and sources from the map
+    cleanMap();
+
+    // switch interaction mode
+    if (interactionMode === "view") {
+        interactionMode = "nav";
+    } else {
+        interactionMode = "view";
+    }
+
+} // switchMode
+
+// update user location
+function updateUserLocation() {
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition((position) => {
+            userLat = `${position.coords.latitude}`;
+            userLon = `${position.coords.longitude}`;
+            console.log("updateUserLocation: User location: " + userLat + ", " + userLon);
+            resolve();
+        }, (error) => {
+            console.error(error);
+            reject(error);
+        },
+            { enableHighAccuracy: true, timeout: 10000 });
+    });
+} // updateUserLocation
+
+// fly to a location on the map
+function flyToLocation(lon, lat) {
+    map.flyTo({ center: [lon, lat] });
+} // flyToLocation
+
+
+function placeViewMarker(lon, lat) {
+    if (viewMarker) viewMarker.remove();
+    viewMarker = new mapboxgl.Marker({
+        color: '#FF0000',
+        draggable: 'true'
+    })
+        .setLngLat([lon, lat])
+        .addTo(map);
+    viewMarker.on('dragend', (e) => onDragEnd(viewMarker));
+} // placeViewMarker
+
+// remove all markers, layers and sources from the map
+function cleanMap() {
+
+    // remove markers
+    if (viewMarker) {
+        viewMarker.remove();
+    }
+
+    if (navMarkerStartingPoint) {
+        navMarkerStartingPoint.remove();
+    }
+    if (navMarkerDestinationPoint) {
+        navMarkerDestinationPoint.remove();
+    }
+
+    // remove map layers 
+    if (map.getLayer('route-layer')) {
+        map.removeLayer('route-layer');
+    }
+
+    if (map.getLayer('points-layer')) {
+        map.removeLayer('points-layer');
+    }
+
+    // remove map sources
+    if (map.getSource('route')) {
+        map.removeSource('route');
+    }
+
+    if (map.getSource('points')) {
+        map.removeSource('points');
+    }
+} // cleanMap
+
+function redirectToUserLocation() {
+    updateUserLocation().then(() => {
+        if (userLat && userLon) {
+            flyToLocation(userLon, userLat);
+        }
+    });
+} // redirectToUserLocation
+
+function setMethod (method) {
+    navigationMode = method;
 }
