@@ -27,8 +27,6 @@ let navMarkerDestinationPoint;
 // navigation mode: "drive", "walk", "bicycle", "transit"
 let navigationMode = "bicycle";
 
-// control to the map for zooming in and out
-map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
 // mouse click event handler for the map
 map.addInteraction("click-event", {
@@ -62,13 +60,13 @@ map.addInteraction("click-event", {
         })
           .setLngLat([e.lngLat.lng, e.lngLat.lat])
           .addTo(map);
+          document.getElementById("enterButton").style.display = "block";
         navMarkerDestinationPoint.on("dragend", (e) =>
           onDragEnd(navMarkerDestinationPoint),
         );
       } else {
         // if both markers are on the map
         cleanMap();
-
         // remove map layers and sources
         if (map.getLayer("route-layer")) {
           map.removeLayer("route-layer");
@@ -366,8 +364,14 @@ function switchMode() {
   // switch interaction mode
   if (interactionMode === "view") {
     interactionMode = "nav";
+    document.getElementById("modeButton").style.backgroundColor = "rgb(59, 92, 190)";
+    document.getElementById("modeButton").innerHTML = "View";
+    document.getElementById("optionsmenu").style.display = "grid";
   } else {
     interactionMode = "view";
+    document.getElementById("modeButton").style.backgroundColor = "rgb(89, 130, 255)";
+    document.getElementById("modeButton").innerHTML = "Navigate";
+    document.getElementById("optionsmenu").style.display = "none";
   }
 } // switchMode
 
@@ -411,6 +415,7 @@ function placeViewMarker(lon, lat) {
 // remove all markers, layers and sources from the map
 function cleanMap() {
   // remove markers
+  document.getElementById("enterButton").style.display = "none";
   if (viewMarker) {
     viewMarker.remove();
   }
@@ -452,6 +457,11 @@ function redirectToUserLocation() {
 // change navigation mode
 function setNavigationMode(method) {
   navigationMode = method;
+  document.getElementById("walk").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("bicycle").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("transit").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("drive").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById(method).style.backgroundColor = "rgb(59, 92, 190)";
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
 

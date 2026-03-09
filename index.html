@@ -27,12 +27,15 @@
 <body>
   <div id="map"></div>
   <div id="everythingbox">
-    <input id="locInput" type="text" value="Enter Location" />
-    <button type="button" onclick="switchMode()" id="modeButton">🧭</button>
-    <button type="button" onclick="redirectToUserLocation()" id="locationButton">
-      Current <br />
-      Location
-    </button>
+    <div id="topbar">
+      <input id="locInput" type="text" value="Enter Location" />
+      <button type="button" onclick="redirectToUserLocation()" id="locationButton">
+        Location
+      </button>
+      <button type="button" onclick="switchMode()" id="modeButton">Navigate</button>
+      
+    </div>
+
     <div class="route-settings">
       <label class="switch">
         <input id="showDetails" type="checkbox" onclick="drawRoute()" />
@@ -45,11 +48,11 @@
       Calculate Route
     </button>
 
-    <div class="dropdown-content">
-      <div id="walk" onclick="setNavigationMode('walk')">Walk</div>
-      <div id="drive" onclick="setNavigationMode('drive')">Drive</div>
-      <div id="bus" onclick="setNavigationMode('transit')">Bus</div>
-      <div id="bike" onclick="setNavigationMode('bicycle')">Bike</div>
+    <div class="dropdown-content" id="optionsmenu">
+      <div class="options" id="walk" onclick="setNavigationMode('walk')">Walk</div>
+      <div class="options" id="drive" onclick="setNavigationMode('drive')">Drive</div>
+      <div class="options" id="transit" onclick="setNavigationMode('transit')">Bus</div>
+      <div class="options" id="bicycle" onclick="setNavigationMode('bicycle')">Bike</div>
     </div>
   </div>
 </body>

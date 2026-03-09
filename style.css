@@ -17,6 +17,8 @@ body {
     height:70px;
     border:none;
     transform:translate(0,0);
+    display:inline-block;
+    padding-left:20px;
 }
 #modeButton{
     border-radius:5px;
@@ -26,6 +28,9 @@ body {
     border:none;
     background-color:rgb(89, 130, 255);
     transform:translate(0,0);
+    display:inline-block;
+    color:white;
+    margin-top:8px;
 }
 #modeButton:hover {
     background-color:rgb(59, 92, 190);
@@ -34,11 +39,11 @@ body {
     border-radius:5px;
     width:70px;
     height:75px;
-    margin:none;
     border:none;
     background-color:rgb(89, 130, 255);
-    transform:translateY(6.5px);
+    transform:translate(0,0);
     color:white;
+    display:inline-block;
 }
 #locationButton:hover {
     background-color:rgb(59, 92, 190);
@@ -56,17 +61,20 @@ body {
     text-align:center;
     display:block;
     position:absolute;
-    right:0;
+    right:1vw;
+    bottom:1vw;
+    display:none;
 }
 
 
 .dropdown-content{
     transform:translateY(-10px);
-    display:grid;
+    display:none;
     grid-template-areas: 'walk drive bus bike';
     gap:10px;
     width:min-content;
     margin-left:8%;
+    
 }
 #walk{
     grid-area:walk;
@@ -90,7 +98,7 @@ body {
     font-size:20px;
     padding-top:5px;
 }
-#bus{
+#transit{
     grid-area:bus;
     display:inline-block;
     color:white;
@@ -101,11 +109,11 @@ body {
     font-size:20px;
     padding-top:5px;
 }
-#bike{
+#bicycle{
     grid-area:bike;
     display:inline-block;
     color:white;
-    background-color:rgb(89, 130, 255);
+    background-color:rgb(59, 92, 190);
     border-radius:15px;
     height:30px;
     width:150px;
@@ -121,16 +129,5 @@ body {
     .dropdown-content{
         grid-template-areas: 'walk drive' 'bus bike';
         margin-left:5%;
-    }
-}
-
-@keyframes slidein{
-    100%{
-        transform:translate(93vw);
-    }
-}
-@keyframes slideout{
-    100%{
-        transform:translate(101vw);
     }
 }
