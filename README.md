@@ -20,6 +20,8 @@ This document outlines the workflow for contributing to the RouteFinderApp. Foll
 git clone repository_url
 ```
 
+Note: repository_url should end with ".git". Go to your project's page on GitHub, click the green `<> Code` button and copy the url.
+
 1.2.2 (Highly recommended) After cloning, close VS Code and open the specific project folder that was just created. This ensures your terminal path is correctly set to the root of the project. (Otherwise you will have to access the project's folder in terminal by `cd ProjectName`)
 
 **!!! All the commands below must be run in the project folder!**
@@ -66,6 +68,8 @@ git checkout -b your-branch-name
 
 **checkout -b** creates a new branch.
 
+2.3 Write your code. Proceed to step 3 after you've finished your work.
+
 ## 3. Saving Your Progress (Local)
 
 3.1 (Optional) If you forget which files you've changed, run:
@@ -104,11 +108,19 @@ git push origin your-branch-name
 
 4.2.1 Go to the project's GitHub page. You will see a yellow notification: "Compare & pull request". Click it.
 
+If the yellow notification does not showup:
+
+a. Go to your project's "Pull request" page on GitHub;
+
+b. Click the green `New pull request` button;
+
+c. On the top of the page, set `base` to "main", `compare` to "your-branch-name";
+
+d. Click the green `Create pull request` button.
+
 4.2.2 Describe your changes: Explain what you added or fixed so your teammates understand the code.
 
-4.2.3 Confirm the commit, then click the "Delete branch" button to delete the new branch on GitHub.
-
-4.2.4 (Optional) Assign reviewers: Tag a teammate to check your work before it's officially added to the project. (David :>)
+4.2.3 (Optional) Assign reviewers: Tag a teammate to check your work before it's officially added to the project. (David :>)
 
 ## 5. Merging
 
@@ -118,7 +130,11 @@ Once the teammate approves your PR, you could continue with 5.2
 
 ### 5.2 Merging
 
-Click "Merge pull request". At this point, your code will officially enter the main branch.
+5.2.1 Click the `Merge pull request` button.
+
+5.2.2 Click `Confirm merge`. At this point, your code will officially enter the main branch.
+
+5.2.3 Click the `Delete branch` button to delete the new branch on GitHub.
 
 ### 5.3 (Only when there are conflicts) Conflicts Solving
 
