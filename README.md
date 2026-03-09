@@ -10,7 +10,7 @@ This document outlines the workflow for contributing to the RouteFinderApp. Foll
 
 1.1.2 Open Terminal: Press **Ctrl + Shift + ` (the key above Tab)**. (You can toggle it later with **Ctrl + J**).
 
-1.1.3 (Only when you are working on school computers) Click the downward arrow next to the + icon on the top right of the terminal panel and select "Git Bash" in the dropdown.
+1.1.3 (**Important if you are working on school computers**) Click the downward arrow next to the + icon on the top right of the terminal panel and select "Git Bash" in the dropdown. Otherwise you will be using the powershell and git commands can not work.
 
 ### 1.2 Clone the Repository
 
@@ -208,7 +208,17 @@ config.js
 firstApiKey = CONFIG.API_KEY_First;
 ```
 
-## Testing PWA on Mobile Devices
+## Testing PWA on Mobile Devices Without GitHub Pages
+
+### Why
+
+GitHub Pages can not update instantly while you edit your code. Especially when API keys are involved in your project, you will also have to configure "Domain Restrictions" in the backend of your API.
+### Prerequisite 
+
+a. You will need to bring your own laptop to school and have a working copy of your project opened in its VS Code. 
+
+b. Your phone is able create a Hotspot while only using Mobile data.
+
 
 ### 1. Setting Up the Server
 
