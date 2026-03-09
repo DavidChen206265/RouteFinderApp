@@ -207,3 +207,63 @@ config.js
 ```
 firstApiKey = CONFIG.API_KEY_First;
 ```
+
+## Testing PWA on Mobile Devices
+
+### 1. Setting Up the Server
+
+1.1 Set up `Node.js` on your computer. Go to https://nodejs.org/en/download
+
+1.2 In the terminal of your project:
+
+```
+npx http-server -p 8080 --bind 0.0.0.0 
+```
+
+8080 can be changed to the port you would like to hold your project on.
+
+1.3 In the terminal output, find this section:
+
+```
+Available on:
+http://127.0.0.1:8080
+http://192.168.189.37:8080
+```
+The url starts with `http://192.168.` is your address to use. (e.g. `http://192.168.189.37:8080`)
+
+1.4 After testing, hit `Ctrl + C` to stop the server.
+
+### 2. Setting Up Your Phone
+
+2.1 (If you are at school) Disconnect your phone from school's WIFI, only use Mobile data.
+
+2.2 Setup a Hotspot on your phone and connect your computer to it.
+
+2.1 Open Chrome on your phone.
+
+### 3. In your Chrome's address bar, go to：
+
+```
+chrome://flags/#unsafely-treat-insecure-origin-as-secure
+```
+
+### 4. Find "Insecure origins treated as secure".
+
+### 5. Put your IP and port in. 
+
+(e.g. http://192.168.189.37:8080)
+
+### 6. Turn `Disabled` to `Enabled`.
+
+### 7. Click `Relaunch` button.
+
+### 8. Showing Console 
+
+8.1 Add these code inside your `<head>` tag in `index.html`:
+
+```
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+````
+
+8.2 A small "gear" icon will appear on your phone screen. Tap it, and it opens a fully functional console, element inspector, and network tab right inside your mobile browser.

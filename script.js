@@ -42,6 +42,7 @@ map.addInteraction("click-event", {
     if (interactionMode === "view") {
       placeViewMarker(e.lngLat.lng, e.lngLat.lat);
     } else if (interactionMode === "nav") {
+      
       // if the user is in navigation mode, create a blue marker for the starting point and a green marker for the destination point
       // if both markers already exist, remove them and create a new blue marker for the starting point
       if (!navMarkerStartingPoint) {
