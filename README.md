@@ -213,6 +213,7 @@ firstApiKey = CONFIG.API_KEY_First;
 ### Why
 
 GitHub Pages can not update instantly while you edit your code. Especially when API keys are involved in your project, you will also have to configure "Domain Restrictions" in the backend of your API.
+
 ### Prerequisite 
 
 a. You will need to bring your own laptop to school and have a working copy of your project opened in its VS Code. 

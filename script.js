@@ -66,7 +66,7 @@ map.addInteraction("click-event", {
         );
       } else {
         // if both markers are on the map
-        cleanMap();
+        cleanMap(true);
         // remove map layers and sources
         if (map.getLayer("route-layer")) {
           map.removeLayer("route-layer");
@@ -359,7 +359,7 @@ function showPopup(data, lngLat) {
 // switch between view mode and navigation mode
 function switchMode() {
   // remove all markers, layers and sources from the map
-  cleanMap();
+  cleanMap(true);
 
   // switch interaction mode
   if (interactionMode === "view") {
@@ -413,7 +413,7 @@ function placeViewMarker(lon, lat) {
 } // placeViewMarker
 
 // remove all markers, layers and sources from the map
-function cleanMap() {
+function cleanMap(removeMarkers) {
   // remove markers
   document.getElementById("enterButton").style.display = "none";
   if (viewMarker) {
@@ -423,6 +423,7 @@ function cleanMap() {
   if (navMarkerStartingPoint) {
     navMarkerStartingPoint.remove();
   }
+
   if (navMarkerDestinationPoint) {
     navMarkerDestinationPoint.remove();
   }
@@ -456,12 +457,15 @@ function redirectToUserLocation() {
 
 // change navigation mode
 function setNavigationMode(method) {
+
+  cleanMap(false);
   navigationMode = method;
-  document.getElementById("walk").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("bicycle").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("transit").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("drive").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById(method).style.backgroundColor = "rgb(59, 92, 190)";
+
+  // re-draw the route with the new navigation mode 
+  if (markerStartingPoint && markerDestinationPoint) {  
+    findRoute();
+  }
+  
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
 
