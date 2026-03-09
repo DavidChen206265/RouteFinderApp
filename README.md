@@ -20,6 +20,8 @@ This document outlines the workflow for contributing to the RouteFinderApp. Foll
 git clone repository_url
 ```
 
+e.g. repository_url for our repository: https://github.com/DavidChen206265/RouteFinderApp.git
+
 Note: repository_url should end with ".git". Go to your project's page on GitHub, click the green `<> Code` button and copy the url.
 
 1.2.2 (Highly recommended) After cloning, close VS Code and open the specific project folder that was just created. This ensures your terminal path is correctly set to the root of the project. (Otherwise you will have to access the project's folder in terminal by `cd ProjectName`)
@@ -37,8 +39,6 @@ c. After 1.2.1, the project folder will be at `H:\thePathOfYourDocumentFolder\Co
 d. The index.html will be at `H:\thePathOfYourDocumentFolder\ComputerScienceProjects\MyGithubProject\index.html`
 
 e. In 1.2.2, open MyGithubProject folder with VS Code instead of ComputerScienceProjects.
-
-_repository_url for our repository: https://github.com/DavidChen206265/RouteFinderApp.git_
 
 ## 2. Starting Feature Development (Everyday procedure starts from here)
 
