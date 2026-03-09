@@ -40,7 +40,7 @@ map.addInteraction("click-event", {
     if (interactionMode === "view") {
       placeViewMarker(e.lngLat.lng, e.lngLat.lat);
     } else if (interactionMode === "nav") {
-      
+
       // if the user is in navigation mode, create a blue marker for the starting point and a green marker for the destination point
       // if both markers already exist, remove them and create a new blue marker for the starting point
       if (!navMarkerStartingPoint) {
@@ -60,7 +60,7 @@ map.addInteraction("click-event", {
         })
           .setLngLat([e.lngLat.lng, e.lngLat.lat])
           .addTo(map);
-          document.getElementById("enterButton").style.display = "block";
+        document.getElementById("enterButton").style.display = "block";
         navMarkerDestinationPoint.on("dragend", (e) =>
           onDragEnd(navMarkerDestinationPoint),
         );
@@ -138,13 +138,13 @@ function findRoute() {
 
   fetch(
     "https://api.geoapify.com/v1/routing?waypoints=" +
-      startingPoint +
-      "|" +
-      destinationPoint +
-      "&mode=" +
-      navigationMode +
-      "&apiKey=" +
-      apiKeyGeoapify,
+    startingPoint +
+    "|" +
+    destinationPoint +
+    "&mode=" +
+    navigationMode +
+    "&apiKey=" +
+    apiKeyGeoapify,
     requestOptions,
   )
     .then((res) => res.json())
@@ -416,17 +416,21 @@ function placeViewMarker(lon, lat) {
 function cleanMap(removeMarkers) {
   // remove markers
   document.getElementById("enterButton").style.display = "none";
-  if (viewMarker) {
-    viewMarker.remove();
-  }
 
-  if (navMarkerStartingPoint) {
-    navMarkerStartingPoint.remove();
-  }
+  if (removeMarkers) {
 
-  if (navMarkerDestinationPoint) {
-    navMarkerDestinationPoint.remove();
-  }
+    if (viewMarker) {
+      viewMarker.remove();
+    }
+
+    if (navMarkerStartingPoint) {
+      navMarkerStartingPoint.remove();
+    }
+
+    if (navMarkerDestinationPoint) {
+      navMarkerDestinationPoint.remove();
+    }
+  } // if removeMarkers
 
   // remove map layers
   if (map.getLayer("route-layer")) {
@@ -462,10 +466,17 @@ function setNavigationMode(method) {
   navigationMode = method;
 
   // re-draw the route with the new navigation mode 
-  if (markerStartingPoint && markerDestinationPoint) {  
+  if (navMarkerStartingPoint && navMarkerDestinationPoint) {
     findRoute();
   }
-  
+
+  // update the buttons' background color
+  document.getElementById("walk").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("bicycle").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("transit").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById("drive").style.backgroundColor = "rgb(89, 130, 255)";
+  document.getElementById(method).style.backgroundColor = "rgb(59, 92, 190)";
+
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
 
