@@ -67,7 +67,7 @@ map.addInteraction("click-event", {
         );
       } else {
         // if both markers are on the map
-        cleanMap();
+        cleanMap(true);
 
         // remove map layers and sources
         if (map.getLayer("route-layer")) {
@@ -361,7 +361,7 @@ function showPopup(data, lngLat) {
 // switch between view mode and navigation mode
 function switchMode() {
   // remove all markers, layers and sources from the map
-  cleanMap();
+  cleanMap(true);
 
   // switch interaction mode
   if (interactionMode === "view") {
@@ -409,7 +409,7 @@ function placeViewMarker(lon, lat) {
 } // placeViewMarker
 
 // remove all markers, layers and sources from the map
-function cleanMap() {
+function cleanMap(removeMarkers) {
   // remove markers
   if (viewMarker) {
     viewMarker.remove();
@@ -418,6 +418,7 @@ function cleanMap() {
   if (navMarkerStartingPoint) {
     navMarkerStartingPoint.remove();
   }
+
   if (navMarkerDestinationPoint) {
     navMarkerDestinationPoint.remove();
   }
@@ -451,7 +452,15 @@ function redirectToUserLocation() {
 
 // change navigation mode
 function setNavigationMode(method) {
+
+  cleanMap(false);
   navigationMode = method;
+
+  // re-draw the route with the new navigation mode 
+  if (markerStartingPoint && markerDestinationPoint) {  
+    findRoute();
+  }
+  
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
 
