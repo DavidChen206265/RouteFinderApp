@@ -4,21 +4,27 @@ This document outlines the workflow for contributing to the RouteFinderApp. Foll
 
 ## 1. Initial Setup (One-time per Project)
 
-1.1 Configure VS Code Terminal
+### 1.1 Configure VS Code Terminal
 
 1.1.1 Prepare your Workspace: Create/open a folder where you want your project's folder to be located and open it with VS Code. (Please see the example at the end of step 1 to decide where you would like the project to be on your computer.)
 
-1.1.2 Open Terminal: Press **Ctrl + Shift + ` (above Tab)**. (You can toggle it later with **Ctrl + J**).
+1.1.2 Open Terminal: Press **Ctrl + Shift + ` (the key above Tab)**. (You can toggle it later with **Ctrl + J**).
 
 1.1.3 (Only when you are working on school computers) Click the downward arrow next to the + icon on the top right of the terminal panel and select "Git Bash" in the dropdown.
 
-1.2.1 Clone the repository to your local machine by `git clone repository_url`
+### 1.2 Clone the Repository
+
+1.2.1 Clone the repository to your local machine by:
+
+```
+git clone repository_url
+```
 
 1.2.2 (Highly recommended) After cloning, close VS Code and open the specific project folder that was just created. This ensures your terminal path is correctly set to the root of the project. (Otherwise you will have to access the project's folder in terminal by `cd ProjectName`)
 
 **!!! All the commands below must be run in the project folder!**
 
-Example:
+### Example:
 
 a. If your repository's name on GitHub is MyGithubProject:
 
@@ -38,48 +44,85 @@ _repository_url for our repository: https://github.com/DavidChen206265/RouteFind
 
 2.1 Sync with the Team: Before starting work, ensure that your local main branch is up-to-date.
 
-`git checkout main`
+```
+git checkout main
+```
 
 **checkout** is the command for switching to a branch. This line switchs to the main branch
 
-`git pull origin main`
+```
+git pull origin main
+```
 
-**pull** updates your local code to the code from a branch;
-**origin** is automatically defined when you execute git clone. It is the default nickname that Git gives to your remote repository (that is, the address on GitHub)
+**pull** updates your local code to the code from a branch.
+
+**origin** is automatically defined when you execute git clone. It is the default nickname that Git gives to your remote repository (that is, the address on GitHub).
 
 2.2 Create a feature branch so your experimental code doesn't affect others. Give it a meaningful name.
 
-`git checkout -b your-branch-name       # checkout -b creates a new branch`
+```
+git checkout -b your-branch-name
+```
+
+**checkout -b** creates a new branch.
 
 ## 3. Saving Your Progress (Local)
 
-3.1 (Optional) If you forget which files you've changed, run: `git status`
+3.1 (Optional) If you forget which files you've changed, run:
 
-3.2 Add changes: `git add .` (**.** means all files. This tells Git you want to include all your recent changes in the next "save". Or you could add a specific file by: `git add filename`)
+```
+git status
+```
 
-3.3 Commit to the local repository: `git commit -m "Describe what you did (e.g., Fixed navbar bug)"` (Creates the actual save point)
+3.2 Add changes:
+
+```
+git add .
+```
+
+**.** means all files. This tells Git you want to include all your recent changes in the next "save". Or you could add a specific file by: `git add filename`.
+
+3.3 Commit to the local repository:
+
+```
+git commit -m "Describe what you did (e.g., Fixed navbar bug)"
+```
 
 Think of a "Commit" as a save point in a video game. If you mess up later, you can always return to this point.
 
+**commit -m "comment"** creates the actual save point.
+
 ## 4. Submitting Work for Review
 
-4.1 Push to GitHub (Upload your local feature branch to the online repository): `git push origin your-branch-name`
+### 4.1 Push to GitHub (Upload your local feature branch to the online repository):
 
-4.2 Open a Pull Request (PR) on GitHub:
+```
+git push origin your-branch-name
+```
+
+### 4.2 Open a Pull Request (PR) on GitHub:
 
 4.2.1 Go to the project's GitHub page. You will see a yellow notification: "Compare & pull request". Click it.
 
 4.2.2 Describe your changes: Explain what you added or fixed so your teammates understand the code.
 
-4.2.3 (Optional) Assign reviewers: Tag a teammate to check your work before it's officially added to the project. (David :>)
+4.2.3 Confirm the commit, then click the "Delete branch" button to delete the new branch on GitHub.
+
+4.2.4 (Optional) Assign reviewers: Tag a teammate to check your work before it's officially added to the project. (David :>)
 
 ## 5. Merging
 
-5.1 (Only when you did 4.2.3) Once the teammate approves your PR, you could continue with 5.2
+### 5.1 (Only when you did 4.2.3)
 
-5.2 Merging: Click "Merge pull request". At this point, your code will officially enter the main branch.
+Once the teammate approves your PR, you could continue with 5.2
 
-5.3 (Only when there are conflicts) If two people have modified the same line of code, GitHub will warn of a conflict and prevent automatic merging.
+### 5.2 Merging
+
+Click "Merge pull request". At this point, your code will officially enter the main branch.
+
+### 5.3 (Only when there are conflicts) Conflicts Solving
+
+If two people have modified the same line of code, GitHub will warn of a conflict and prevent automatic merging.
 
 5.3.1 Synchronize your main branch locally:
 
@@ -88,9 +131,17 @@ git checkout main
 git pull origin main
 ```
 
-5.3.2 Switch back to your feature branch: `git checkout your-branch-name`
+5.3.2 Switch back to your feature branch:
 
-5.3.3 Merge the main branch into your branch: `git merge main`
+```
+git checkout your-branch-name
+```
+
+5.3.3 Merge the main branch into your branch:
+
+```
+git merge main
+```
 
 5.3.4 Manual resolution: VS Code will highlight the conflicted parts. Choose whose code to keep and save the file.
 
@@ -98,7 +149,7 @@ git pull origin main
 
 ## 6. Workspace Cleanup
 
-6.1 Once your feature is merged, return to VS Code and delete the branch to keep the repository tidy.
+Once your feature is merged, return to VS Code and delete the branch to keep the repository tidy.
 
 ```
 git checkout main
