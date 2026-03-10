@@ -13,13 +13,30 @@ body {
 }
 #location-input{
     border-radius:5px;
-    width:80%;
+    width:50%;
     height:70px;
     border:none;
     transform:translate(0,0);
     display:inline-block;
     padding-left:20px;
 }
+
+#search-button{
+    border-radius:5px;
+    width:70px;
+    height:75px;
+    margin:none;
+    border:none;
+    background-color:rgb(89, 130, 255);
+    transform:translate(0,0);
+    display:inline-block;
+    color:white;
+    margin-top:8px;
+}
+#search-button:hover {
+    background-color:rgb(59, 92, 190);
+}
+
 #interaction-mode-button{
     border-radius:5px;
     width:70px;
@@ -35,7 +52,8 @@ body {
 #interaction-mode-button:hover {
     background-color:rgb(59, 92, 190);
 }
-#locationButton{
+
+#location-button{
     border-radius:5px;
     width:70px;
     height:75px;
@@ -45,9 +63,10 @@ body {
     color:white;
     display:inline-block;
 }
-#locationButton:hover {
+#location-button:hover {
     background-color:rgb(59, 92, 190);
 }
+
 
 #everythingbox{
     text-align:center;

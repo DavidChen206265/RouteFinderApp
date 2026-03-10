@@ -1,29 +1,24 @@
-apiKeyMapbox = CONFIG.API_KEY_MAPBOX;
-apiKeyGeoapify = CONFIG.API_KEY_GEOAPIFY;
-mapboxgl.accessToken = apiKeyMapbox;
+const MAPBOX_API_KEY = CONFIG.API_KEY_MAPBOX;
+const GEOAPIFY_API_KEY = CONFIG.API_KEY_GEOAPIFY;
+mapboxgl.accessToken = MAPBOX_API_KEY;
 
-// map initialization
-const map = new mapboxgl.Map({
-  container: "map", // container ID
-  center: [-123.3742906693874, 48.45312301560749], // starting position [lng, lat]. Note that lat must be set between -90 and 90
-  zoom: 15, // starting zoom
-});
-
-// popup initialization
-const popup = new mapboxgl.Popup();
+// default location
+const DEFAULT_LNG = -123.3742906693874;
+const DEFAULT_LAT = 48.45312301560749;
 
 // modes: "view" and "nav"
 let interactionMode = "view";
 
 // user location
-let userLat = 0;
-let userLng = 0;
+let userLng = DEFAULT_LNG;
+let userLat = DEFAULT_LAT;
 
 // markers
 let userLocationMarker;
 let viewMarker;
 let navMarkerStartingPoint;
 let navMarkerDestinationPoint;
+let searchResultMarkers = [];
 
 // navigation modes: "drive", "walk", "bicycle", "transit"
 let navigationMode = "drive";
@@ -31,20 +26,35 @@ let navigationMode = "drive";
 // navigation variables
 let routeData;
 
+// searching variables
+let searchResultsData;
+
 // time helper variables
 let locationUpdater;
 // should be 5 seconds, but set to 30 seconds to show fewer console logs for testing
 const LOCATION_UPDATE_INTERVAL = 30 * 1000;
 
 // HTML element references
+const locationInput = document.getElementById('location-input');
+const searchButton = document.getElementById('search-button');
 const interactionModeButton = document.getElementById(
-  "interaction-mode-button",
+  'interaction-mode-button',
 );
-const navModeDropdown = document.getElementById("nav-mode-dropdown");
-const calculateRouteButton = document.getElementById("calculate-route-button");
+const navModeDropdown = document.getElementById('nav-mode-dropdown');
+const calculateRouteButton = document.getElementById('calculate-route-button');
 const routeInformationDisplay = document.getElementById(
-  "route-information-display",
+  'route-information-display',
 );
+
+// map initialization
+const map = new mapboxgl.Map({
+  container: "map", // container ID
+  center: [DEFAULT_LNG, DEFAULT_LAT], // starting position [lng, lat]. Note that lat must be set between -90 and 90
+  zoom: 15, // starting zoom
+});
+
+// popup initialization
+const popup = new mapboxgl.Popup();
 
 // mouse click event handler for the map
 map.addInteraction("click-event", {
@@ -54,7 +64,7 @@ map.addInteraction("click-event", {
     if (interactionMode === "view") {
       placeViewMarker(e.lngLat.lng, e.lngLat.lat);
     } else if (interactionMode === "nav") {
-     
+
       if (!navMarkerStartingPoint) {
 
         // place the starting point marker
@@ -120,126 +130,126 @@ function findRoute() {
   };
 
   try {
-  fetch(
-    "https://api.geoapify.com/v1/routing?waypoints=" +
+    fetch(
+      "https://api.geoapify.com/v1/routing?waypoints=" +
       startingPoint +
       "|" +
       destinationPoint +
       "&mode=" +
       navigationMode +
       "&apiKey=" +
-      apiKeyGeoapify,
-    requestOptions,
-  )
-    .then((res) => res.json())
-    .then(
-      (routeResult) => {
-        routeData = routeResult;
-        const steps = [];
-        const instructions = [];
-        const stepPoints = [];
+      GEOAPIFY_API_KEY,
+      requestOptions,
+    )
+      .then((res) => res.json())
+      .then(
+        (routeResult) => {
+          routeData = routeResult;
+          const steps = [];
+          const instructions = [];
+          const stepPoints = [];
 
-        console.log(routeData);
+          console.log(routeData);
 
-        // catch explicit API errors 
-        if (routeData.error) {
-          console.warn("API Routing Error:", routeData.message);
-          alert(`Routing failed: ${routeData.message}`);
-          routeData = null; 
-          cleanMap(false); 
-          return;
-        }
+          // catch explicit API errors 
+          if (routeData.error) {
+            console.warn("API Routing Error:", routeData.message);
+            alert(`Routing failed: ${routeData.message}`);
+            routeData = null;
+            cleanMap(false);
+            return;
+          }
 
-        // catch valid requests that just return zero routes
-        if (!routeData.features || routeData.features.length === 0) {
-          alert("No route found between these two locations.");
-          console.warn("No route data found.");
-          routeData = null; 
-          cleanMap(false);
-          return;
-        }
+          // catch valid requests that just return zero routes
+          if (!routeData.features || routeData.features.length === 0) {
+            alert("No route found between these two locations.");
+            console.warn("No route data found.");
+            routeData = null;
+            cleanMap(false);
+            return;
+          }
 
-        routeData.features[0].properties.legs.forEach((leg, legIndex) => {
-          const legGeometry =
-            routeData.features[0].geometry.coordinates[legIndex];
-          leg.steps.forEach((step, index) => {
-            if (step.instruction) {
-              instructions.push({
+          routeData.features[0].properties.legs.forEach((leg, legIndex) => {
+            const legGeometry =
+              routeData.features[0].geometry.coordinates[legIndex];
+            leg.steps.forEach((step, index) => {
+              if (step.instruction) {
+                instructions.push({
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: legGeometry[step.from_index],
+                  },
+                  properties: {
+                    text: step.instruction.text,
+                  },
+                });
+              }
+
+              if (index !== 0) {
+                stepPoints.push({
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: legGeometry[step.from_index],
+                  },
+                  properties: step,
+                });
+              }
+
+              if (step.from_index === step.to_index) {
+                // destination point
+                return;
+              }
+
+              const stepGeometry = legGeometry.slice(
+                step.from_index,
+                step.to_index + 1,
+              );
+              steps.push({
                 type: "Feature",
                 geometry: {
-                  type: "Point",
-                  coordinates: legGeometry[step.from_index],
-                },
-                properties: {
-                  text: step.instruction.text,
-                },
-              });
-            }
-
-            if (index !== 0) {
-              stepPoints.push({
-                type: "Feature",
-                geometry: {
-                  type: "Point",
-                  coordinates: legGeometry[step.from_index],
+                  type: "LineString",
+                  coordinates: stepGeometry,
                 },
                 properties: step,
               });
-            }
-
-            if (step.from_index === step.to_index) {
-              // destination point
-              return;
-            }
-
-            const stepGeometry = legGeometry.slice(
-              step.from_index,
-              step.to_index + 1,
-            );
-            steps.push({
-              type: "Feature",
-              geometry: {
-                type: "LineString",
-                coordinates: stepGeometry,
-              },
-              properties: step,
             });
           });
-        });
 
-        routeStepsData = {
-          type: "FeatureCollection",
-          features: steps,
-        };
+          routeStepsData = {
+            type: "FeatureCollection",
+            features: steps,
+          };
 
-        instructionsData = {
-          type: "FeatureCollection",
-          features: instructions,
-        };
+          instructionsData = {
+            type: "FeatureCollection",
+            features: instructions,
+          };
 
-        stepPointsData = {
-          type: "FeatureCollection",
-          features: stepPoints,
-        };
+          stepPointsData = {
+            type: "FeatureCollection",
+            features: stepPoints,
+          };
 
-        map.addSource("route", {
-          type: "geojson",
-          data: routeData,
-        });
+          map.addSource("route", {
+            type: "geojson",
+            data: routeData,
+          });
 
-        map.addSource("points", {
-          type: "geojson",
-          data: instructionsData,
-        });
+          map.addSource("points", {
+            type: "geojson",
+            data: instructionsData,
+          });
 
-        addLayerEvents();
-        drawRoute();
+          addLayerEvents();
+          drawRoute();
 
-        // update the route information display with the time and distance of the route
-        updateRouteInformationDisplay();
-      },
-      (err) => console.log(err),
-    );
+          // update the route information display with the time and distance of the route
+          updateRouteInformationDisplay();
+        },
+        (err) => console.log(err),
+      );
   } catch (error) {
     console.error("Error fetching route data:", error);
     alert("An error occurred while fetching the route data. Please try again.");
@@ -421,9 +431,9 @@ function updateUserLocation() {
         userLng = `${position.coords.longitude}`;
         console.log(
           "updateUserLocation: User location: lat_" +
-            userLat +
-            ", lng_" +
-            userLng,
+          userLat +
+          ", lng_" +
+          userLng,
         );
         resolve();
       },
@@ -446,25 +456,24 @@ function placeViewMarker(lng, lat) {
   if (viewMarker) {
     viewMarker.setLngLat([lng, lat]);
 
-    // Update the popup text if the marker moves
+    // update the popup text if the marker moves
     viewMarker.getPopup().setHTML(`
       <h4>Target Location</h4>
       <p>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</p>
     `);
 
-    // ✅ FIX: Force the popup to open if it is currently closed
     if (!viewMarker.getPopup().isOpen()) {
       viewMarker.togglePopup();
     }
   } else {
-    // 1. Create the popup object
+    // create the popup object
     const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
       .setHTML(`
         <h4>Target Location</h4>
         <p>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</p>
       `);
 
-    // 2. Attach the popup to the marker when you create it
+    // attach the popup to the marker when you create it
     viewMarker = new mapboxgl.Marker({
       color: "#FF0000",
       draggable: true,
@@ -472,11 +481,11 @@ function placeViewMarker(lng, lat) {
       .setLngLat([lng, lat])
       .setPopup(markerPopup)
       .addTo(map)
-      .togglePopup(); // ✅ FIX: Opens immediately upon creation
+      .togglePopup(); 
 
     viewMarker.on("dragend", (e) => {
       onDragEnd(viewMarker);
-      // Update popup coords when dragging finishes
+      // update popup coords when dragging finishes
       const newCoords = viewMarker.getLngLat();
       viewMarker.getPopup().setHTML(`
           <h4>Target Location</h4>
@@ -507,9 +516,9 @@ function placeStartingPointMarker(lng, lat) {
   }
   console.log(
     "placeStartingPointMarker: Starting point marker placed at: lat_" +
-      lat +
-      ", lng_" +
-      lng,
+    lat +
+    ", lng_" +
+    lng,
   );
 } // placeStartingPointMarker
 
@@ -530,9 +539,9 @@ function placeDestinationPointMarker(lng, lat) {
   }
   console.log(
     "placeDestinationPointMarker: Destination point marker placed at: lat_" +
-      lat +
-      ", lng_" +
-      lng,
+    lat +
+    ", lng_" +
+    lng,
   );
 } // placeDestinationPointMarker
 
@@ -569,9 +578,9 @@ async function placeUserLocationMarker() {
 
   console.log(
     "placeUserLocationMarker: User location marker placed at: lat_" +
-      userLat +
-      ", lng_" +
-      userLng,
+    userLat +
+    ", lng_" +
+    userLng,
   );
 } // placeUserLocationMarker
 
@@ -622,9 +631,9 @@ function redirectToUserLocation() {
       flyToLocation(userLng, userLat);
       console.log(
         "redirectToUserLocation: Redirected to user location: lat_" +
-          userLat +
-          ", lng_" +
-          userLng,
+        userLat +
+        ", lng_" +
+        userLng,
       );
     } // if
   });
@@ -693,3 +702,66 @@ function locationUpdateHandler() {
     console.warn("Background location update failed:", error?.message);
   });
 } // locationUpdateHandler
+
+function searchLocation() {
+
+  // temp
+  if (interactionMode === "nav") {
+    alert("Please switch to Explore mode to search for a location.");
+    return;
+  }
+
+  // input checking
+  const searchText = locationInput.value.trim();
+  if (!searchText || searchText.toLowerCase() === "enter location") {
+    alert("Please enter a location to search for.");
+    return;
+  }
+
+  const requestOptions = {
+    method: "GET",
+    redirect: "follow"
+  };
+
+  try {
+    fetch("https://api.geoapify.com/v1/geocode/search?text=" + searchText + "&format=json&apiKey=" + GEOAPIFY_API_KEY, requestOptions)
+      .then((response) => response.json())
+      .then((searchResults) => {
+        searchResultsData = searchResults;
+
+        searchResultsData.results.forEach((result) => {
+          placeSearchResultMarker(result);
+        });
+
+        // deal with results
+        console.log(searchResultsData);
+      }).catch((error) => console.log(error));
+  } catch (error) {
+
+    // clean search results data
+    searchResultsData = null;
+    console.error("Error during location search:", error);
+    alert("An error occurred while searching for the location. Please try again."); // temp
+  }
+
+} // searchLocation
+
+function placeSearchResultMarker(result) {
+  // create the popup object
+    const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
+      .setHTML(`
+        <h4>` + result.name + `</h4>
+        <p>Lat: ${result.lat.toFixed(4)}<br>Lng: ${result.lon.toFixed(4)}</p>
+      `);
+
+    // attach the popup to the marker when you create it
+    let searchResultMarker = new mapboxgl.Marker({
+      color: "#FF0000",
+      draggable: true,
+    })
+      .setLngLat([result.lon, result.lat])
+      .setPopup(markerPopup)
+      .addTo(map)
+      .togglePopup(); 
+  searchResultMarkers.push(searchResultMarker);
+} // placeSearchResultMarker
