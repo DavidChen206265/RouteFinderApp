@@ -12,8 +12,10 @@
   <link rel="icon" href="favicon.ico" sizes="any" />
 
   <title>Route Finder</title>
+
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.css" rel="stylesheet" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.js"></script>
+
   <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
   <script src="config.js"></script>
@@ -29,11 +31,14 @@
   <div id="everythingbox">
     <div id="topbar">
       <input id="location-input" type="text" value="Enter Location" />
-      <button type="button" onclick="redirectToUserLocation()" id="locationButton">
+      <button type="button" onclick="searchLocation()" id="search-button">
+        Search
+      </button>
+      <button type="button" onclick="redirectToUserLocation()" id="location-button">
         Location
       </button>
       <button type="button" onclick="switchInteractionMode()" id="interaction-mode-button">Navigate</button>
-      
+
     </div>
 
     <div class="route-settings">
