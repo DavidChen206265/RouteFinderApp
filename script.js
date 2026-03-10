@@ -17,85 +17,59 @@ let interactionMode = "view";
 
 // user location
 let userLat = 0;
-let userLon = 0;
+let userLng = 0;
 
 // markers
+let userLocationMarker;
 let viewMarker;
 let navMarkerStartingPoint;
 let navMarkerDestinationPoint;
 
-// navigation mode: "drive", "walk", "bicycle", "transit"
+// navigation modes: "drive", "walk", "bicycle", "transit"
 let navigationMode = "drive";
 
 // navigation variables
 let routeData;
 
+// time helper variables
+let locationUpdater;
+// should be 5 seconds, but set to 30 seconds to show fewer console logs for testing
+const LOCATION_UPDATE_INTERVAL = 30 * 1000;
+
+// HTML element references
+const interactionModeButton = document.getElementById(
+  "interaction-mode-button",
+);
+const navModeDropdown = document.getElementById("nav-mode-dropdown");
+const calculateRouteButton = document.getElementById("calculate-route-button");
+const routeInformationDisplay = document.getElementById(
+  "route-information-display",
+);
+
 // mouse click event handler for the map
 map.addInteraction("click-event", {
   type: "click",
   handler: (e) => {
-    console.log(`Clicked at: ${e.lngLat.lng}, ${e.lngLat.lat}`);
-
-    // create a Marker at a coordinate where the user clicks on the map
-
     // if the user is in view mode, create a red marker that can be dragged to a new location
     if (interactionMode === "view") {
       placeViewMarker(e.lngLat.lng, e.lngLat.lat);
     } else if (interactionMode === "nav") {
-
-      // if the user is in navigation mode, create a blue marker for the starting point and a green marker for the destination point
-      // if both markers already exist, remove them and create a new blue marker for the starting point
+     
       if (!navMarkerStartingPoint) {
-        navMarkerStartingPoint = new mapboxgl.Marker({
-          color: "#0000FF",
-          draggable: "true",
-        })
-          .setLngLat([e.lngLat.lng, e.lngLat.lat])
-          .addTo(map);
-        navMarkerStartingPoint.on("dragend", (e) =>
-          onDragEnd(navMarkerStartingPoint),
-        );
-      } else if (!navMarkerDestinationPoint) {
-        navMarkerDestinationPoint = new mapboxgl.Marker({
-          color: "#00FF00",
-          draggable: "true",
-        })
-          .setLngLat([e.lngLat.lng, e.lngLat.lat])
-          .addTo(map);
-        document.getElementById("calculate-route-button").style.display = "block";
-        navMarkerDestinationPoint.on("dragend", (e) =>
-          onDragEnd(navMarkerDestinationPoint),
-        );
-      } else {
-        // if both markers are on the map
+
+        // place the starting point marker
         cleanMap(true);
-        // remove map layers and sources
-        if (map.getLayer("route-layer")) {
-          map.removeLayer("route-layer");
-        }
+        placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
+      } else if (!navMarkerDestinationPoint) {
+        // place the destination point marker
+        placeDestinationPointMarker(e.lngLat.lng, e.lngLat.lat);
+        calculateRouteButton.style.display = "block";
+      } else {
 
-        if (map.getLayer("points-layer")) {
-          map.removeLayer("points-layer");
-        }
-
-        if (map.getSource("route")) {
-          map.removeSource("route");
-        }
-
-        if (map.getSource("points")) {
-          map.removeSource("points");
-        }
-
-        navMarkerStartingPoint = new mapboxgl.Marker({
-          color: "#0000FF",
-          draggable: "true",
-        })
-          .setLngLat([e.lngLat.lng, e.lngLat.lat])
-          .addTo(map);
-        navMarkerStartingPoint.on("dragend", (e) =>
-          onDragEnd(navMarkerStartingPoint),
-        );
-        navMarkerDestinationPoint = null;
+        // if both markers are on the map
+        // remove the existing destination point marker but keep the starting point marker, and create a new blue marker for the starting point at the clicked location
+        cleanMap(true);
+        placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
       } // inner if
     } // outer if
   }, // handler
@@ -103,19 +77,26 @@ map.addInteraction("click-event", {
 
 // main logic starts here
 window.onload = async () => {
+  // initialize map with user location and put the first user location marker
   try {
-    await updateUserLocation();
-    if (userLat && userLon) {
-      flyToLocation(userLon, userLat);
-      placeViewMarker(userLon, userLat);
+    await placeUserLocationMarker();
+    if (userLat && userLng) {
+      flyToLocation(userLng, userLat);
     }
   } catch (error) {
     console.warn("Location access failed:", error.message);
   } // catch
 
+  // initialize navigation mode buttons
   setNavigationMode(navigationMode);
+
+  // set up an interval to update user location
+  locationUpdater = setInterval(() => {
+    locationUpdateHandler();
+  }, LOCATION_UPDATE_INTERVAL);
 }; // window.onload
 
+// drag end event handler for the markers
 function onDragEnd(marker) {
   console.log(marker.getLngLat().lng + ", " + marker.getLngLat().lat);
 } // onDragEnd
@@ -138,15 +119,16 @@ function findRoute() {
     redirect: "follow",
   };
 
+  try {
   fetch(
     "https://api.geoapify.com/v1/routing?waypoints=" +
-    startingPoint +
-    "|" +
-    destinationPoint +
-    "&mode=" +
-    navigationMode +
-    "&apiKey=" +
-    apiKeyGeoapify,
+      startingPoint +
+      "|" +
+      destinationPoint +
+      "&mode=" +
+      navigationMode +
+      "&apiKey=" +
+      apiKeyGeoapify,
     requestOptions,
   )
     .then((res) => res.json())
@@ -158,6 +140,24 @@ function findRoute() {
         const stepPoints = [];
 
         console.log(routeData);
+
+        // catch explicit API errors 
+        if (routeData.error) {
+          console.warn("API Routing Error:", routeData.message);
+          alert(`Routing failed: ${routeData.message}`);
+          routeData = null; 
+          cleanMap(false); 
+          return;
+        }
+
+        // catch valid requests that just return zero routes
+        if (!routeData.features || routeData.features.length === 0) {
+          alert("No route found between these two locations.");
+          console.warn("No route data found.");
+          routeData = null; 
+          cleanMap(false);
+          return;
+        }
 
         routeData.features[0].properties.legs.forEach((leg, legIndex) => {
           const legGeometry =
@@ -240,8 +240,10 @@ function findRoute() {
       },
       (err) => console.log(err),
     );
-
-
+  } catch (error) {
+    console.error("Error fetching route data:", error);
+    alert("An error occurred while fetching the route data. Please try again.");
+  }
 } // findRoute
 
 function drawRoute() {
@@ -367,21 +369,47 @@ function showPopup(data, lngLat) {
 
 // switch between view mode and navigation mode
 function switchInteractionMode() {
-  // remove all markers, layers and sources from the map
-  cleanMap(true);
-
   // switch interaction mode
   if (interactionMode === "view") {
+    // switch to navigation mode
     interactionMode = "nav";
-    document.getElementById("interaction-mode-button").style.backgroundColor = "rgb(59, 92, 190)";
-    document.getElementById("interaction-mode-button").innerHTML = "View";
-    document.getElementById("nav-mode-dropdown").style.display = "grid";
+
+    // set the route to the view marker location as default
+    if (viewMarker && userLocationMarker) {
+      placeStartingPointMarker(
+        viewMarker.getLngLat().lng,
+        viewMarker.getLngLat().lat,
+      );
+      placeDestinationPointMarker(
+        userLocationMarker.getLngLat().lng,
+        userLocationMarker.getLngLat().lat,
+      );
+      findRoute();
+
+      // reserve the new nav markers, only remove the view marker
+      cleanMap(false);
+      if (viewMarker) {
+        viewMarker.remove();
+        viewMarker = null;
+      } // inner if
+    } else {
+      cleanMap(true);
+    } // outer if
+
+    // update UI elements
+    interactionModeButton.style.backgroundColor = "rgb(59, 92, 190)";
+    interactionModeButton.innerHTML = "Explore";
+    navModeDropdown.style.display = "grid";
   } else {
+    // switch to view mode
     interactionMode = "view";
-    document.getElementById("interaction-mode-button").style.backgroundColor = "rgb(89, 130, 255)";
-    document.getElementById("interaction-mode-button").innerHTML = "Navigate";
-    document.getElementById("nav-mode-dropdown").style.display = "none";
-  }
+
+    // update UI elements
+    cleanMap(true);
+    interactionModeButton.style.backgroundColor = "rgb(89, 130, 255)";
+    interactionModeButton.innerHTML = "Navigate";
+    navModeDropdown.style.display = "none";
+  } // else
 } // switchInteractionMode
 
 // update user location
@@ -390,9 +418,12 @@ function updateUserLocation() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         userLat = `${position.coords.latitude}`;
-        userLon = `${position.coords.longitude}`;
+        userLng = `${position.coords.longitude}`;
         console.log(
-          "updateUserLocation: User location: " + userLat + ", " + userLon,
+          "updateUserLocation: User location: lat_" +
+            userLat +
+            ", lng_" +
+            userLng,
         );
         resolve();
       },
@@ -406,38 +437,163 @@ function updateUserLocation() {
 } // updateUserLocation
 
 // fly to a location on the map
-function flyToLocation(lon, lat) {
-  map.flyTo({ center: [lon, lat] });
+function flyToLocation(lng, lat) {
+  map.flyTo({ center: [lng, lat] });
 } // flyToLocation
 
-function placeViewMarker(lon, lat) {
-  if (viewMarker) viewMarker.remove();
-  viewMarker = new mapboxgl.Marker({
-    color: "#FF0000",
-    draggable: "true",
-  })
-    .setLngLat([lon, lat])
-    .addTo(map);
-  viewMarker.on("dragend", (e) => onDragEnd(viewMarker));
+// place the view marker on the map at the specified location, or move it to the new location if it already exists. The view marker is a red marker that can be dragged to a new location to update the view.
+function placeViewMarker(lng, lat) {
+  if (viewMarker) {
+    viewMarker.setLngLat([lng, lat]);
+
+    // Update the popup text if the marker moves
+    viewMarker.getPopup().setHTML(`
+      <h4>Target Location</h4>
+      <p>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</p>
+    `);
+
+    // ✅ FIX: Force the popup to open if it is currently closed
+    if (!viewMarker.getPopup().isOpen()) {
+      viewMarker.togglePopup();
+    }
+  } else {
+    // 1. Create the popup object
+    const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
+      .setHTML(`
+        <h4>Target Location</h4>
+        <p>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</p>
+      `);
+
+    // 2. Attach the popup to the marker when you create it
+    viewMarker = new mapboxgl.Marker({
+      color: "#FF0000",
+      draggable: true,
+    })
+      .setLngLat([lng, lat])
+      .setPopup(markerPopup)
+      .addTo(map)
+      .togglePopup(); // ✅ FIX: Opens immediately upon creation
+
+    viewMarker.on("dragend", (e) => {
+      onDragEnd(viewMarker);
+      // Update popup coords when dragging finishes
+      const newCoords = viewMarker.getLngLat();
+      viewMarker.getPopup().setHTML(`
+          <h4>Target Location</h4>
+          <p>Lat: ${newCoords.lat.toFixed(4)}<br>Lng: ${newCoords.lng.toFixed(4)}</p>
+        `);
+    });
+  }
+
+  console.log(
+    "placeViewMarker: View marker placed at: lat_" + lat + ", lng_" + lng,
+  );
 } // placeViewMarker
+
+// place the starting point marker on the map at the specified location, or move it to the new location if it already exists. The starting point marker is a blue marker that can be dragged to a new location to update the starting point for navigation.
+function placeStartingPointMarker(lng, lat) {
+  if (navMarkerStartingPoint) {
+    navMarkerStartingPoint.setLngLat([lng, lat]);
+  } else {
+    navMarkerStartingPoint = new mapboxgl.Marker({
+      color: "#0000FF",
+      draggable: "true",
+    })
+      .setLngLat([lng, lat])
+      .addTo(map);
+    navMarkerStartingPoint.on("dragend", (e) =>
+      onDragEnd(navMarkerStartingPoint),
+    );
+  }
+  console.log(
+    "placeStartingPointMarker: Starting point marker placed at: lat_" +
+      lat +
+      ", lng_" +
+      lng,
+  );
+} // placeStartingPointMarker
+
+// place the destination point marker on the map at the specified location, or move it to the new location if it already exists. The destination point marker is a green marker that can be dragged to a new location to update the destination point for navigation.
+function placeDestinationPointMarker(lng, lat) {
+  if (navMarkerDestinationPoint) {
+    navMarkerDestinationPoint.setLngLat([lng, lat]);
+  } else {
+    navMarkerDestinationPoint = new mapboxgl.Marker({
+      color: "#00FF00",
+      draggable: "true",
+    })
+      .setLngLat([lng, lat])
+      .addTo(map);
+    navMarkerDestinationPoint.on("dragend", (e) =>
+      onDragEnd(navMarkerDestinationPoint),
+    );
+  }
+  console.log(
+    "placeDestinationPointMarker: Destination point marker placed at: lat_" +
+      lat +
+      ", lng_" +
+      lng,
+  );
+} // placeDestinationPointMarker
+
+// place the user location marker on the map at the specified location, or move it to the new location if it already exists. The user location marker is a blue marker that cannot be dragged.
+async function placeUserLocationMarker() {
+  // try to update user location first, and if it fails, do not place the user location marker on the map and return directly. This is to prevent the case where the user location marker is placed on the map at a default location (0, 0) when the user denies location access or when there is an error in getting the user location.
+  try {
+    await updateUserLocation();
+  } catch (error) {
+    console.warn(
+      "placeUserLocationMarker: Location access failed:",
+      error.message,
+    );
+
+    // remove the user location marker from the map if it exists
+    if (userLocationMarker) {
+      userLocationMarker.remove();
+      userLocationMarker = null;
+    } // if
+
+    return;
+  } // catch
+
+  // place the user location marker
+  if (userLocationMarker) {
+    userLocationMarker.setLngLat([userLng, userLat]);
+  } else {
+    userLocationMarker = new mapboxgl.Marker({
+      color: "#0D81DB",
+    })
+      .setLngLat([userLng, userLat])
+      .addTo(map);
+  } // else
+
+  console.log(
+    "placeUserLocationMarker: User location marker placed at: lat_" +
+      userLat +
+      ", lng_" +
+      userLng,
+  );
+} // placeUserLocationMarker
 
 // remove all markers, layers and sources from the map
 function cleanMap(removeMarkers) {
   // remove markers
-  document.getElementById("calculate-route-button").style.display = "none";
+  calculateRouteButton.style.display = "none";
 
   if (removeMarkers) {
-
     if (viewMarker) {
       viewMarker.remove();
+      viewMarker = null;
     }
 
     if (navMarkerStartingPoint) {
       navMarkerStartingPoint.remove();
+      navMarkerStartingPoint = null;
     }
 
     if (navMarkerDestinationPoint) {
       navMarkerDestinationPoint.remove();
+      navMarkerDestinationPoint = null;
     }
   } // if removeMarkers
 
@@ -462,20 +618,25 @@ function cleanMap(removeMarkers) {
 
 function redirectToUserLocation() {
   updateUserLocation().then(() => {
-    if (userLat && userLon) {
-      flyToLocation(userLon, userLat);
-    }
+    if (userLat && userLng) {
+      flyToLocation(userLng, userLat);
+      console.log(
+        "redirectToUserLocation: Redirected to user location: lat_" +
+          userLat +
+          ", lng_" +
+          userLng,
+      );
+    } // if
   });
 } // redirectToUserLocation
 
 // change navigation mode
 function setNavigationMode(method) {
-
   // clean the map but keep the navigation markers if they exist, so that the route can be re-drawn with the new navigation mode without having to set the starting point and destination point again
   cleanMap(false);
   navigationMode = method;
 
-  // re-draw the route with the new navigation mode 
+  // re-draw the route with the new navigation mode
   if (navMarkerStartingPoint && navMarkerDestinationPoint) {
     findRoute();
   }
@@ -486,7 +647,8 @@ function setNavigationMode(method) {
       option.style.backgroundColor = "rgb(89, 130, 255)";
     }
   });
-  document.getElementById("nav-mode-option-" + method).style.backgroundColor = "rgb(59, 92, 190)";
+  document.getElementById("nav-mode-option-" + method).style.backgroundColor =
+    "rgb(59, 92, 190)";
 
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
@@ -501,22 +663,33 @@ function makeDistancePrettier(distance) {
 
 function makeTimePrettier(time) {
   if (time >= 3600) {
-    return (time / 3600).toFixed(2) + " hr";
+    return (
+      (time / 3600).toFixed(0) +
+      " hr " +
+      ((time % 3600) / 60).toFixed(0) +
+      " min"
+    );
   } else if (time >= 60) {
-    return (time / 60).toFixed(2) + " min";
+    return Math.round(time / 60) + " min";
   } else {
-    return time.toFixed(0) + " s";
+    return "Less than 1 min";
   }
 } // makeTimePrettier
 
 function updateRouteInformationDisplay() {
-
   if (routeData) {
-    document.getElementById("route-information-display").innerHTML = `${makeTimePrettier(routeData.features[0].properties.time)} (${makeDistancePrettier(routeData.features[0].properties.distance)})`;
+    routeInformationDisplay.innerHTML = `${makeTimePrettier(routeData.features[0].properties.time)} (${makeDistancePrettier(routeData.features[0].properties.distance)})`;
     console.log("Route information updated."); // test
   } else {
-    document.getElementById("route-information-display").innerHTML = "Time (Distance)";
+    routeInformationDisplay.innerHTML = "Time (Distance)";
     console.log("No route data available to update route information display."); // test
     return;
   }
 } // updateRouteInformationDisplay
+
+function locationUpdateHandler() {
+  // place the user location marker
+  placeUserLocationMarker().catch((error) => {
+    console.warn("Background location update failed:", error?.message);
+  });
+} // locationUpdateHandler

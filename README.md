@@ -1,3 +1,11 @@
+# Resources for RoutFinder
+
+Beginner's Guide: *https://docs.mapbox.com/mapbox-gl-js/guides/install/*
+
+API Playground: *https://apidocs.geoapify.com/playground/routing/?mode=truck&optimizeRoute=false&type=balanced&units=metric&maxSpeed=0&avoidTolls=false&avoidFerries=false&avoidHighways=false&instructions=false&route=false&elevation=false&traffic=free_flow*
+
+Documentation: *https://apidocs.geoapify.com/*
+
 # GitHub SOP
 
 This document outlines the workflow for contributing to the RouteFinderApp. Following these steps ensures code stability and prevents "crying David" scenarios.
@@ -214,12 +222,11 @@ firstApiKey = CONFIG.API_KEY_First;
 
 GitHub Pages can not update instantly while you edit your code. Especially when API keys are involved in your project, you will also have to configure "Domain Restrictions" in the backend of your API.
 
-### Prerequisite 
+### Prerequisite
 
-a. You will need to bring your own laptop to school and have a working copy of your project opened in its VS Code. 
+a. You will need to bring your own laptop to school and have a working copy of your project opened in its VS Code.
 
 b. Your phone is able create a Hotspot while only using Mobile data.
-
 
 ### 1. Setting Up the Server
 
@@ -228,7 +235,7 @@ b. Your phone is able create a Hotspot while only using Mobile data.
 1.2 In the terminal of your project:
 
 ```
-npx http-server -p 8080 --bind 0.0.0.0 
+npx http-server -p 8080 --bind 0.0.0.0
 ```
 
 8080 can be changed to the port you would like to hold your project on.
@@ -240,6 +247,7 @@ Available on:
 http://127.0.0.1:8080
 http://192.168.189.37:8080
 ```
+
 The url starts with `http://192.168.` is your address to use. (e.g. `http://192.168.189.37:8080`)
 
 1.4 After testing, hit `Ctrl + C` to stop the server.
@@ -260,7 +268,7 @@ chrome://flags/#unsafely-treat-insecure-origin-as-secure
 
 ### 4. Find "Insecure origins treated as secure".
 
-### 5. Put your IP and port in. 
+### 5. Put your IP and port in.
 
 (e.g. http://192.168.189.37:8080)
 
@@ -268,13 +276,13 @@ chrome://flags/#unsafely-treat-insecure-origin-as-secure
 
 ### 7. Click `Relaunch` button.
 
-### 8. Showing Console 
+### 8. Showing Console
 
 8.1 Add these code inside your `<head>` tag in `index.html`:
 
 ```
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
-````
+```
 
 8.2 A small "gear" icon will appear on your phone screen. Tap it, and it opens a fully functional console, element inspector, and network tab right inside your mobile browser.
