@@ -25,8 +25,10 @@ let navMarkerStartingPoint;
 let navMarkerDestinationPoint;
 
 // navigation mode: "drive", "walk", "bicycle", "transit"
-let navigationMode = "bicycle";
+let navigationMode = "drive";
 
+// navigation variables
+let routeData;
 
 // mouse click event handler for the map
 map.addInteraction("click-event", {
@@ -60,7 +62,7 @@ map.addInteraction("click-event", {
         })
           .setLngLat([e.lngLat.lng, e.lngLat.lat])
           .addTo(map);
-        document.getElementById("enterButton").style.display = "block";
+        document.getElementById("calculate-route-button").style.display = "block";
         navMarkerDestinationPoint.on("dragend", (e) =>
           onDragEnd(navMarkerDestinationPoint),
         );
@@ -109,9 +111,9 @@ window.onload = async () => {
     }
   } catch (error) {
     console.warn("Location access failed:", error.message);
+  } // catch
 
-    // continue without location
-  }
+  setNavigationMode(navigationMode);
 }; // window.onload
 
 function onDragEnd(marker) {
@@ -154,6 +156,8 @@ function findRoute() {
         const steps = [];
         const instructions = [];
         const stepPoints = [];
+
+        console.log(routeData);
 
         routeData.features[0].properties.legs.forEach((leg, legIndex) => {
           const legGeometry =
@@ -230,9 +234,14 @@ function findRoute() {
 
         addLayerEvents();
         drawRoute();
+
+        // update the route information display with the time and distance of the route
+        updateRouteInformationDisplay();
       },
       (err) => console.log(err),
     );
+
+
 } // findRoute
 
 function drawRoute() {
@@ -357,23 +366,23 @@ function showPopup(data, lngLat) {
 } // showPopup
 
 // switch between view mode and navigation mode
-function switchMode() {
+function switchInteractionMode() {
   // remove all markers, layers and sources from the map
   cleanMap(true);
 
   // switch interaction mode
   if (interactionMode === "view") {
     interactionMode = "nav";
-    document.getElementById("modeButton").style.backgroundColor = "rgb(59, 92, 190)";
-    document.getElementById("modeButton").innerHTML = "View";
-    document.getElementById("optionsmenu").style.display = "grid";
+    document.getElementById("interaction-mode-button").style.backgroundColor = "rgb(59, 92, 190)";
+    document.getElementById("interaction-mode-button").innerHTML = "View";
+    document.getElementById("nav-mode-dropdown").style.display = "grid";
   } else {
     interactionMode = "view";
-    document.getElementById("modeButton").style.backgroundColor = "rgb(89, 130, 255)";
-    document.getElementById("modeButton").innerHTML = "Navigate";
-    document.getElementById("optionsmenu").style.display = "none";
+    document.getElementById("interaction-mode-button").style.backgroundColor = "rgb(89, 130, 255)";
+    document.getElementById("interaction-mode-button").innerHTML = "Navigate";
+    document.getElementById("nav-mode-dropdown").style.display = "none";
   }
-} // switchMode
+} // switchInteractionMode
 
 // update user location
 function updateUserLocation() {
@@ -415,7 +424,7 @@ function placeViewMarker(lon, lat) {
 // remove all markers, layers and sources from the map
 function cleanMap(removeMarkers) {
   // remove markers
-  document.getElementById("enterButton").style.display = "none";
+  document.getElementById("calculate-route-button").style.display = "none";
 
   if (removeMarkers) {
 
@@ -462,6 +471,7 @@ function redirectToUserLocation() {
 // change navigation mode
 function setNavigationMode(method) {
 
+  // clean the map but keep the navigation markers if they exist, so that the route can be re-drawn with the new navigation mode without having to set the starting point and destination point again
   cleanMap(false);
   navigationMode = method;
 
@@ -471,11 +481,12 @@ function setNavigationMode(method) {
   }
 
   // update the buttons' background color
-  document.getElementById("walk").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("bicycle").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("transit").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById("drive").style.backgroundColor = "rgb(89, 130, 255)";
-  document.getElementById(method).style.backgroundColor = "rgb(59, 92, 190)";
+  document.querySelectorAll(".nav-mode-options").forEach((option) => {
+    if (option.id != "route-information-display") {
+      option.style.backgroundColor = "rgb(89, 130, 255)";
+    }
+  });
+  document.getElementById("nav-mode-option-" + method).style.backgroundColor = "rgb(59, 92, 190)";
 
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode
@@ -497,3 +508,15 @@ function makeTimePrettier(time) {
     return time.toFixed(0) + " s";
   }
 } // makeTimePrettier
+
+function updateRouteInformationDisplay() {
+
+  if (routeData) {
+    document.getElementById("route-information-display").innerHTML = `${makeTimePrettier(routeData.features[0].properties.time)} (${makeDistancePrettier(routeData.features[0].properties.distance)})`;
+    console.log("Route information updated."); // test
+  } else {
+    document.getElementById("route-information-display").innerHTML = "Time (Distance)";
+    console.log("No route data available to update route information display."); // test
+    return;
+  }
+} // updateRouteInformationDisplay
