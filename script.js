@@ -13,6 +13,9 @@ let interactionMode = "view";
 let userLng = DEFAULT_LNG;
 let userLat = DEFAULT_LAT;
 
+//markerlock
+let markerlock = false;
+
 // markers
 let userLocationMarker;
 let viewMarker;
@@ -57,33 +60,36 @@ const map = new mapboxgl.Map({
 const popup = new mapboxgl.Popup();
 
 // mouse click event handler for the map
-map.addInteraction("click-event", {
-  type: "click",
-  handler: (e) => {
-    // if the user is in view mode, create a red marker that can be dragged to a new location
-    if (interactionMode === "view") {
-      placeViewMarker(e.lngLat.lng, e.lngLat.lat);
-    } else if (interactionMode === "nav") {
 
-      if (!navMarkerStartingPoint) {
+  map.addInteraction("click-event", {
+    type: "click",
+    handler: (e) => {
+      // if the user is in view mode, create a red marker that can be dragged to a new location
+      if(markerlock == false){
+        if (interactionMode === "view") {
+          placeViewMarker(e.lngLat.lng, e.lngLat.lat);
+        } else if (interactionMode === "nav") {
 
-        // place the starting point marker
-        cleanMap(true);
-        placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
-      } else if (!navMarkerDestinationPoint) {
-        // place the destination point marker
-        placeDestinationPointMarker(e.lngLat.lng, e.lngLat.lat);
-        calculateRouteButton.style.display = "block";
-      } else {
+          if (!navMarkerStartingPoint) {
 
-        // if both markers are on the map
-        // remove the existing destination point marker but keep the starting point marker, and create a new blue marker for the starting point at the clicked location
-        cleanMap(true);
-        placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
-      } // inner if
-    } // outer if
-  }, // handler
-});
+            // place the starting point marker
+            cleanMap(true);
+            placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
+          } else if (!navMarkerDestinationPoint) {
+            // place the destination point marker
+            placeDestinationPointMarker(e.lngLat.lng, e.lngLat.lat);
+            calculateRouteButton.style.display = "block";
+          } else {
+
+            // if both markers are on the map
+            // remove the existing destination point marker but keep the starting point marker, and create a new blue marker for the starting point at the clicked location
+            cleanMap(true);
+            placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
+          } // inner if
+        } // outer if
+    }
+    }, // handler
+  });
 
 // main logic starts here
 window.onload = async () => {
@@ -113,6 +119,8 @@ function onDragEnd(marker) {
 
 // find a route between the starting point and the destination point
 function findRoute() {
+  markerlock = true;
+  console.log("locked");
   // return if starting point or destination is not selected
   if (!navMarkerStartingPoint || !navMarkerDestinationPoint) return;
 
@@ -157,6 +165,7 @@ function findRoute() {
             alert(`Routing failed: ${routeData.message}`);
             routeData = null;
             cleanMap(false);
+            markerlock = false;
             return;
           }
 
@@ -166,6 +175,7 @@ function findRoute() {
             console.warn("No route data found.");
             routeData = null;
             cleanMap(false);
+            markerlock = false;
             return;
           }
 
@@ -317,6 +327,8 @@ function drawRoute() {
       "circle-stroke-width": 1,
     },
   });
+  markerlock = false;
+  console.log("unlocked");
 } // drawRoute
 
 function addLayerEvents() {
