@@ -38,15 +38,15 @@ const LOCATION_UPDATE_INTERVAL = 30 * 1000;
 let controller;
 
 // HTML element references
-const locationInput = document.getElementById('location-input');
-const searchButton = document.getElementById('search-button');
+const locationInput = document.getElementById("location-input");
+const searchButton = document.getElementById("search-button");
 const interactionModeButton = document.getElementById(
-  'interaction-mode-button',
+  "interaction-mode-button",
 );
-const navModeDropdown = document.getElementById('nav-mode-dropdown');
-const calculateRouteButton = document.getElementById('calculate-route-button');
+const navModeDropdown = document.getElementById("nav-mode-dropdown");
+const calculateRouteButton = document.getElementById("calculate-route-button");
 const routeInformationDisplay = document.getElementById(
-  'route-information-display',
+  "route-information-display",
 );
 
 // map initialization
@@ -67,24 +67,20 @@ map.addInteraction("click-event", {
     if (interactionMode === "view") {
       placeViewMarker(e.lngLat.lng, e.lngLat.lat);
     } else if (interactionMode === "nav") {
-
       // abort any ongoing route calculation when the user clicks on the map to set a new starting point or destination point, to prevent multiple overlapping route calculations
       if (controller) {
         controller.abort();
       }
 
       if (!navMarkerStartingPoint) {
-
         // place the starting point marker
         cleanMap(true);
         placeStartingPointMarker(e.lngLat.lng, e.lngLat.lat);
       } else if (!navMarkerDestinationPoint) {
-
         // place the destination point marker
         placeDestinationPointMarker(e.lngLat.lng, e.lngLat.lat);
         calculateRouteButton.style.display = "block";
       } else {
-
         // if both markers are on the map
         // remove the existing destination point marker but keep the starting point marker, and create a new blue marker for the starting point at the clicked location
         cleanMap(true);
@@ -122,10 +118,9 @@ function onDragEnd(marker) {
 
 // find a route between the starting point and the destination point
 function findRoute() {
-
   // clean the existed source & route
   cleanMap(false);
-  updateRouteInformationDisplay('Calculating route...');
+  updateRouteInformationDisplay("Calculating route...");
 
   // 1. If a previous task is running, kill it first!
   if (controller) {
@@ -154,13 +149,13 @@ function findRoute() {
   try {
     fetch(
       "https://api.geoapify.com/v1/routing?waypoints=" +
-      startingPoint +
-      "|" +
-      destinationPoint +
-      "&mode=" +
-      navigationMode +
-      "&apiKey=" +
-      GEOAPIFY_API_KEY,
+        startingPoint +
+        "|" +
+        destinationPoint +
+        "&mode=" +
+        navigationMode +
+        "&apiKey=" +
+        GEOAPIFY_API_KEY,
       requestOptions,
     )
       .then((res) => res.json())
@@ -173,7 +168,7 @@ function findRoute() {
 
           console.log(routeData);
 
-          // catch explicit API errors 
+          // catch explicit API errors
           if (routeData.error) {
             console.warn("API Routing Error:", routeData.message);
             alert(`Routing failed: ${routeData.message}`);
@@ -408,7 +403,6 @@ function showPopup(data, lngLat) {
 
 // switch between view mode and navigation mode
 function switchInteractionMode() {
-
   if (controller) {
     controller.abort();
   }
@@ -465,9 +459,9 @@ function updateUserLocation() {
         userLng = `${position.coords.longitude}`;
         console.log(
           "updateUserLocation: User location: lat_" +
-          userLat +
-          ", lng_" +
-          userLng,
+            userLat +
+            ", lng_" +
+            userLng,
         );
         resolve();
       },
@@ -509,7 +503,7 @@ function placeViewMarker(lng, lat) {
 
     // attach the popup to the marker when you create it
     viewMarker = new mapboxgl.Marker({
-      color: "#FF0000",
+      color: "#868686",
       draggable: true,
     })
       .setLngLat([lng, lat])
@@ -528,9 +522,7 @@ function placeViewMarker(lng, lat) {
     });
   }
 
-  console.log(
-    "View marker placed at: lat_" + lat + ", lng_" + lng,
-  );
+  console.log("View marker placed at: lat_" + lat + ", lng_" + lng);
 } // placeViewMarker
 
 // place the starting point marker on the map at the specified location, or move it to the new location if it already exists. The starting point marker is a blue marker that can be dragged to a new location to update the starting point for navigation.
@@ -548,12 +540,7 @@ function placeStartingPointMarker(lng, lat) {
       onDragEnd(navMarkerStartingPoint),
     );
   }
-  console.log(
-    "Starting point marker placed at: lat_" +
-    lat +
-    ", lng_" +
-    lng,
-  );
+  console.log("Starting point marker placed at: lat_" + lat + ", lng_" + lng);
 } // placeStartingPointMarker
 
 // place the destination point marker on the map at the specified location, or move it to the new location if it already exists. The destination point marker is a green marker that can be dragged to a new location to update the destination point for navigation.
@@ -572,10 +559,7 @@ function placeDestinationPointMarker(lng, lat) {
     );
   }
   console.log(
-    "Destination point marker placed at: lat_" +
-    lat +
-    ", lng_" +
-    lng,
+    "Destination point marker placed at: lat_" + lat + ", lng_" + lng,
   );
 } // placeDestinationPointMarker
 
@@ -611,16 +595,12 @@ async function placeUserLocationMarker() {
   } // else
 
   console.log(
-    "User location marker placed at: lat_" +
-    userLat +
-    ", lng_" +
-    userLng,
+    "User location marker placed at: lat_" + userLat + ", lng_" + userLng,
   );
 } // placeUserLocationMarker
 
 // remove all markers, layers and sources from the map
 function cleanMap(removeMarkers) {
-
   // delete route data
   routeData = null;
 
@@ -660,9 +640,9 @@ function redirectToUserLocation() {
       flyToLocation(userLng, userLat);
       console.log(
         "redirectToUserLocation: Redirected to user location: lat_" +
-        userLat +
-        ", lng_" +
-        userLng,
+          userLat +
+          ", lng_" +
+          userLng,
       );
     } // if
   });
@@ -670,7 +650,6 @@ function redirectToUserLocation() {
 
 // change navigation mode
 function setNavigationMode(method) {
-
   navigationMode = method;
 
   // re-draw the route with the new navigation mode
@@ -714,11 +693,12 @@ function makeTimePrettier(time) {
 } // makeTimePrettier
 
 function updateRouteInformationDisplay(displayText) {
-
   if (displayText) {
     routeInformationDisplay.style.display = "block";
     routeInformationDisplay.innerHTML = displayText;
-    console.log("Route information display updated with custom text: " + displayText);
+    console.log(
+      "Route information display updated with custom text: " + displayText,
+    );
     return;
   }
 
@@ -741,7 +721,6 @@ function locationUpdateHandler() {
 } // locationUpdateHandler
 
 function searchLocation() {
-
   cleanMap(true);
 
   // temp
@@ -759,19 +738,18 @@ function searchLocation() {
 
   const requestOptions = {
     method: "GET",
-    redirect: "follow"
+    redirect: "follow",
   };
 
   const center = map.getCenter();
   console.log(`map center: lng_${center.lng}, lat_${center.lat}`);
 
   try {
-
-    const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&type=${searchType}&bias=proximity:${center.lng},${center.lat}&filter=circle:${center.lng},${center.lat},5000&limit=20&format=json&apiKey=${GEOAPIFY_API_KEY}`;
+    const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&bias=proximity:${center.lng},${center.lat}&filter=circle:${center.lng},${center.lat},5000&limit=20&format=json&apiKey=${GEOAPIFY_API_KEY}`;
 
     fetch(url, requestOptions)
-      .then(response => response.json())
-      .then(result => {
+      .then((response) => response.json())
+      .then((result) => {
         console.log("Search Results:", result.results);
 
         result.results.forEach((place, index) => {
@@ -780,15 +758,18 @@ function searchLocation() {
           const matchType = place.rank ? place.rank.match_type : "N/A";
 
           console.log(`${index + 1}: ${place.formatted}`);
-          console.log(`   > Match Type: ${matchType} | Confidence: ${confidence}`);
+          console.log(
+            `   > Match Type: ${matchType} | Confidence: ${confidence}`,
+          );
         });
 
-          searchResultsData = result;
+        searchResultsData = result;
 
-          searchResultsData.results.forEach((result) => {
+        searchResultsData.results.forEach((result) => {
           placeSearchResultMarker(result);
-        });      })
-      .catch(error => console.log('error', error));
+        });
+      })
+      .catch((error) => console.log("error", error));
 
     // fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + searchText + "&bias=proximity:" + center.lng + "," + center.lat + "&filter=circle:" + center.lng + "," + center.lat + ",5000&limit=20&format=json&apiKey=" + GEOAPIFY_API_KEY, requestOptions)
     //   .then((response) => response.json())
@@ -803,22 +784,26 @@ function searchLocation() {
     //     console.log(searchResultsData);
     //   }).catch((error) => console.log(error));
   } catch (error) {
-
     // clean search results data
     searchResultsData = null;
     console.error("Error during location search:", error);
-    alert("An error occurred while searching for the location. Please try again."); // temp
+    alert(
+      "An error occurred while searching for the location. Please try again.",
+    ); // temp
   }
-
 } // searchLocation
 
 function placeSearchResultMarker(result) {
   // create the popup object
   const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
-    .setHTML(`
-        <h4>` + result.name + `</h4>
+    .setHTML(
+      `
+        <h4>` +
+        result.name +
+        `</h4>
         <p>Lat: ${result.lat.toFixed(4)}<br>Lng: ${result.lon.toFixed(4)}</p>
-      `);
+      `,
+    );
 
   // attach the popup to the marker when you create it
   let searchResultMarker = new mapboxgl.Marker({
@@ -850,7 +835,6 @@ function removeNavMarkerStartingPoint() {
   } else {
     console.log("No navigation starting point marker to remove.");
   }
-
 } // removeNavMarkerStartingPoint
 
 function removeNavMarkerDestinationPoint() {
