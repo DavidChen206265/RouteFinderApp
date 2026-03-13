@@ -1,5 +1,4 @@
 # api key
-config.js
 # do not ignore the template since GitHub Action is using it
 !config.template.js
 
