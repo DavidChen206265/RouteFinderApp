@@ -1,4 +1,4 @@
-# Resources for RoutFinder
+# Resources for RouteFinder
 
 Beginner's Guide: *https://docs.mapbox.com/mapbox-gl-js/guides/install/*
 
