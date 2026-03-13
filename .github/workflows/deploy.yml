@@ -20,6 +20,8 @@ jobs:
             cp config.template.js config.js
             sed -i "s/MAPBOX_TOKEN_PLACEHOLDER/${{ secrets.MAPBOX_API_KEY }}/g" config.js
             sed -i "s/GEOAPIFY_TOKEN_PLACEHOLDER/${{ secrets.GEOAPIFY_API_KEY }}/g" config.js
+            
+            sed -i '/config.js/d' .gitignore
           else
             echo "Error: config.template.js not found!"
             exit 1
