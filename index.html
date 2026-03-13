@@ -1,67 +1,108 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="A high-intensity interval training timer designed for performance."
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" href="favicon.png" sizes="any" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="A high-intensity interval training timer designed for performance." />
-  <meta name="theme-color" content="#000000" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-  <link rel="icon" href="favicon.png" sizes="any" />
+    <title>Route Finder</title>
 
-  <title>Route Finder</title>
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.js"></script>
 
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.css" rel="stylesheet" />
-  <script src="https://api.mapbox.com/mapbox-gl-js/v3.19.0/mapbox-gl.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="manifest.json" />
+    <script src="config.js" defer></script>
+    <script src="script.js" defer></script>
 
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
-  <script src="config.js"></script>
-  <script src="script.js" defer></script>
+    <!-- show console on mobile devices test -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      eruda.init();
+    </script>
+  </head>
 
-  <!-- show console on mobile devices test -->
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
-</head>
+  <body>
+    <div id="map"></div>
+    <div id="everythingbox">
+      <div id="topbar">
+        <input id="location-input" type="text" value="Enter Location" />
+        <button type="button" onclick="searchLocation()" id="search-button">
+          Search
+        </button>
+        <button
+          type="button"
+          onclick="redirectToUserLocation()"
+          id="location-button"
+        >
+          Location
+        </button>
+        <button
+          type="button"
+          onclick="switchInteractionMode()"
+          id="interaction-mode-button"
+        >
+          Navigate
+        </button>
+      </div>
 
-<body>
-  <div id="map"></div>
-  <div id="everythingbox">
-    <div id="topbar">
-      <input id="location-input" type="text" value="Enter Location" />
-      <button type="button" onclick="searchLocation()" id="search-button">
-        Search
+      <div class="route-settings">
+        <label class="switch">
+          <input id="showDetails" type="checkbox" onclick="drawRoute()" />
+          <span class="slider round"></span>
+        </label>
+        Show route details
+      </div>
+
+      <button type="button" onclick="findRoute()" id="calculate-route-button">
+        Calculate Route
       </button>
-      <button type="button" onclick="redirectToUserLocation()" id="location-button">
-        Location
-      </button>
-      <button type="button" onclick="switchInteractionMode()" id="interaction-mode-button">Navigate</button>
 
+      <div class="dropdown-content" id="nav-mode-dropdown">
+        <div
+          class="nav-mode-options"
+          id="nav-mode-option-walk"
+          onclick="setNavigationMode('walk')"
+        >
+          Walk
+        </div>
+        <div
+          class="nav-mode-options"
+          id="nav-mode-option-drive"
+          onclick="setNavigationMode('drive')"
+        >
+          Drive
+        </div>
+        <div
+          class="nav-mode-options"
+          id="nav-mode-option-transit"
+          onclick="setNavigationMode('transit')"
+        >
+          Bus
+        </div>
+        <div
+          class="nav-mode-options"
+          id="nav-mode-option-bicycle"
+          onclick="setNavigationMode('bicycle')"
+        >
+          Bike
+        </div>
+        <div class="nav-mode-options" id="route-information-display"></div>
+      </div>
     </div>
-
-    <div class="route-settings">
-      <label class="switch">
-        <input id="showDetails" type="checkbox" onclick="drawRoute()" />
-        <span class="slider round"></span>
-      </label>
-      Show route details
-    </div>
-
-    <button type="button" onclick="findRoute()" id="calculate-route-button">
-      Calculate Route
-    </button>
-
-    <div class="dropdown-content" id="nav-mode-dropdown">
-      <div class="nav-mode-options" id="nav-mode-option-walk" onclick="setNavigationMode('walk')">Walk</div>
-      <div class="nav-mode-options" id="nav-mode-option-drive" onclick="setNavigationMode('drive')">Drive</div>
-      <div class="nav-mode-options" id="nav-mode-option-transit" onclick="setNavigationMode('transit')">Bus</div>
-      <div class="nav-mode-options" id="nav-mode-option-bicycle" onclick="setNavigationMode('bicycle')">Bike</div>
-      <div class="nav-mode-options" id="route-information-display"></div>
-    </div>
-
-  </div>
-</body>
-
+  </body>
 </html>
