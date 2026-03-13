@@ -72,7 +72,7 @@ map.addInteraction("click-event", {
       if (controller) {
         controller.abort();
       }
-      
+
       if (!navMarkerStartingPoint) {
 
         // place the starting point marker
@@ -515,7 +515,7 @@ function placeViewMarker(lng, lat) {
       .setLngLat([lng, lat])
       .setPopup(markerPopup)
       .addTo(map)
-      .togglePopup(); 
+      .togglePopup();
 
     viewMarker.on("dragend", (e) => {
       onDragEnd(viewMarker);
@@ -670,7 +670,7 @@ function redirectToUserLocation() {
 
 // change navigation mode
 function setNavigationMode(method) {
-  
+
   navigationMode = method;
 
   // re-draw the route with the new navigation mode
@@ -762,19 +762,46 @@ function searchLocation() {
     redirect: "follow"
   };
 
-  try {
-    fetch("https://api.geoapify.com/v1/geocode/search?text=" + searchText + "&format=json&apiKey=" + GEOAPIFY_API_KEY, requestOptions)
-      .then((response) => response.json())
-      .then((searchResults) => {
-        searchResultsData = searchResults;
+  const center = map.getCenter();
+  console.log(`map center: lng_${center.lng}, lat_${center.lat}`);
 
-        searchResultsData.results.forEach((result) => {
-          placeSearchResultMarker(result);
+  try {
+
+    const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&type=${searchType}&bias=proximity:${center.lng},${center.lat}&filter=circle:${center.lng},${center.lat},5000&limit=20&format=json&apiKey=${GEOAPIFY_API_KEY}`;
+
+    fetch(url, requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        console.log("Search Results:", result.results);
+
+        result.results.forEach((place, index) => {
+          // rank helps you see how 'sure' the API is
+          const confidence = place.rank ? place.rank.confidence : "N/A";
+          const matchType = place.rank ? place.rank.match_type : "N/A";
+
+          console.log(`${index + 1}: ${place.formatted}`);
+          console.log(`   > Match Type: ${matchType} | Confidence: ${confidence}`);
         });
 
-        // deal with results
-        console.log(searchResultsData);
-      }).catch((error) => console.log(error));
+          searchResultsData = result;
+
+          searchResultsData.results.forEach((result) => {
+          placeSearchResultMarker(result);
+        });      })
+      .catch(error => console.log('error', error));
+
+    // fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + searchText + "&bias=proximity:" + center.lng + "," + center.lat + "&filter=circle:" + center.lng + "," + center.lat + ",5000&limit=20&format=json&apiKey=" + GEOAPIFY_API_KEY, requestOptions)
+    //   .then((response) => response.json())
+    //   .then((searchResults) => {
+    //     searchResultsData = searchResults;
+
+    //     searchResultsData.results.forEach((result) => {
+    //       placeSearchResultMarker(result);
+    //     });
+
+    //     // deal with results
+    //     console.log(searchResultsData);
+    //   }).catch((error) => console.log(error));
   } catch (error) {
 
     // clean search results data
@@ -787,21 +814,21 @@ function searchLocation() {
 
 function placeSearchResultMarker(result) {
   // create the popup object
-    const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
-      .setHTML(`
+  const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
+    .setHTML(`
         <h4>` + result.name + `</h4>
         <p>Lat: ${result.lat.toFixed(4)}<br>Lng: ${result.lon.toFixed(4)}</p>
       `);
 
-    // attach the popup to the marker when you create it
-    let searchResultMarker = new mapboxgl.Marker({
-      color: "#d42109",
-      draggable: false,
-    })
-      .setLngLat([result.lon, result.lat])
-      .setPopup(markerPopup)
-      .addTo(map)
-      .togglePopup(); 
+  // attach the popup to the marker when you create it
+  let searchResultMarker = new mapboxgl.Marker({
+    color: "#d42109",
+    draggable: false,
+  })
+    .setLngLat([result.lon, result.lat])
+    .setPopup(markerPopup)
+    .addTo(map)
+    .togglePopup();
   searchResultMarkers.push(searchResultMarker);
 } // placeSearchResultMarker
 
