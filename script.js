@@ -13,6 +13,9 @@ let interactionMode = "view";
 let userLng = DEFAULT_LNG;
 let userLat = DEFAULT_LAT;
 
+//markerlock
+let markerlock = false;
+
 // markers
 let userLocationMarker;
 let viewMarker;
@@ -174,6 +177,7 @@ function findRoute() {
             alert(`Routing failed: ${routeData.message}`);
             routeData = null;
             cleanMap(false);
+            markerlock = false;
             return;
           }
 
@@ -183,6 +187,7 @@ function findRoute() {
             console.warn("No route data found.");
             routeData = null;
             cleanMap(false);
+            markerlock = false;
             return;
           }
 
@@ -341,6 +346,8 @@ function drawRoute() {
       "circle-stroke-width": 1,
     },
   });
+  markerlock = false;
+  console.log("unlocked");
 } // drawRoute
 
 function addLayerEvents() {
