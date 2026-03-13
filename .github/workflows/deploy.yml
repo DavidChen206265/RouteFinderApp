@@ -16,12 +16,18 @@ jobs:
 
       - name: Prepare Config File
         run: |
-          cp config.template.js config.js
-          sed -i "s/MAPBOX_TOKEN_PLACEHOLDER/${{ secrets.MAPBOX_API_KEY }}/g" config.js
-          sed -i "s/GEOAPIFY_TOKEN_PLACEHOLDER/${{ secrets.GEOAPIFY_API_KEY }}/g" config.js
+          if [ -f config.template.js ]; then
+            cp config.template.js config.js
+            sed -i "s/MAPBOX_TOKEN_PLACEHOLDER/${{ secrets.MAPBOX_API_KEY }}/g" config.js
+            sed -i "s/GEOAPIFY_TOKEN_PLACEHOLDER/${{ secrets.GEOAPIFY_API_KEY }}/g" config.js
+          else
+            echo "Error: config.template.js not found!"
+            exit 1
+          fi
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: .
           branch: gh-pages
+          clean: false
