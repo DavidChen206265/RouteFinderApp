@@ -1,0 +1,148 @@
+body {
+    margin: 0;
+    padding: 0; 
+    background-color:gray;
+    font-family:helvetica, arial, sans-serif;
+}
+#map { 
+    position: absolute; 
+    width:100%; 
+    top:0; 
+    bottom:0;
+
+}
+#location-input{
+    border-radius:5px;
+    width:50%;
+    height:70px;
+    border:none;
+    transform:translate(0,0);
+    display:inline-block;
+    padding-left:20px;
+}
+
+#search-button{
+    border-radius:5px;
+    width:70px;
+    height:75px;
+    margin:none;
+    border:none;
+    background-color:rgb(89, 130, 255);
+    transform:translate(0,0);
+    display:inline-block;
+    color:white;
+    margin-top:8px;
+}
+#search-button:hover {
+    background-color:rgb(59, 92, 190);
+}
+
+#interaction-mode-button{
+    border-radius:5px;
+    width:70px;
+    height:75px;
+    margin:none;
+    border:none;
+    background-color:rgb(89, 130, 255);
+    transform:translate(0,0);
+    display:inline-block;
+    color:white;
+    margin-top:8px;
+}
+#interaction-mode-button:hover {
+    background-color:rgb(59, 92, 190);
+}
+
+#location-button{
+    border-radius:5px;
+    width:70px;
+    height:75px;
+    border:none;
+    background-color:rgb(89, 130, 255);
+    transform:translate(0,0);
+    color:white;
+    display:inline-block;
+}
+#location-button:hover {
+    background-color:rgb(59, 92, 190);
+}
+
+
+#everythingbox{
+    text-align:center;
+}
+#calculate-route-button{
+    background-color:rgb(89, 130, 255);
+    width:80px;
+    height:80px;
+    border-radius:40px;
+    color:white;
+    text-align:center;
+    display:block;
+    position:absolute;
+    right:1vw;
+    bottom:1vw;
+    display:none;
+}
+
+
+.dropdown-content{
+    transform:translateY(-10px);
+    display:none;
+    grid-template-areas: 'walk drive bus bike info';
+    gap:10px;
+    width:max-content;
+    margin-left:8%;
+    
+}
+
+.nav-mode-options{
+    display:inline-block;
+    color:white;
+    background-color:rgb(89, 130, 255);
+    border-radius:15px;
+    height:30px;
+    width:150px;
+    font-size:20px;
+    padding-top:5px;
+}
+
+#nav-mode-selection-walk{
+    grid-area:walk;
+}
+
+#nav-mode-selection-drive{
+    grid-area:drive;
+}
+
+#nav-mode-selection-transit{
+    grid-area:bus;
+}
+
+#nav-mode-selection-bicycle{
+    grid-area:bike;
+}
+
+#route-information-display{
+    grid-area:info;
+    color:black !important;
+    background-color: white !important;
+    width: 450px !important;
+    display: none;
+}
+
+@media (max-width: 800px){
+    #location-input{
+        width:60%;
+    }
+    .dropdown-content{
+        grid-template-areas: 
+            'walk drive' 
+            'bus bike' 
+            'info info';
+        margin-left:5%;
+    }
+    #route-information-display {
+        width: 100% !important; 
+    }
+}
