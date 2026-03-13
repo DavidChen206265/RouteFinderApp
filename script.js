@@ -438,7 +438,7 @@ function switchInteractionMode() {
     } // outer if
 
     // update UI elements
-    interactionModeButton.style.backgroundColor = "rgb(59, 92, 190)";
+    interactionModeButton.style.backgroundColor = "rgb(225, 141, 17)";
     interactionModeButton.innerHTML = "Explore";
     navModeDropdown.style.display = "grid";
   } else {
@@ -669,11 +669,11 @@ function setNavigationMode(method) {
   // update the buttons' background color
   document.querySelectorAll(".nav-mode-options").forEach((option) => {
     if (option.id != "route-information-display") {
-      option.style.backgroundColor = "rgb(89, 130, 255)";
+      option.style.backgroundColor = "rgb(255, 189, 89)";
     }
   });
   document.getElementById("nav-mode-option-" + method).style.backgroundColor =
-    "rgb(59, 92, 190)";
+    "rgb(166, 122, 56)";
 
   console.log("Navigation mode set to: " + navigationMode);
 } // setNavigationMode

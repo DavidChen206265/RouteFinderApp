@@ -87,7 +87,7 @@ body {
 
 
 .dropdown-content{
-    transform:translateY(-10px);
+    transform:translateY(10px);
     display:none;
     grid-template-areas: 'walk drive bus bike info';
     gap:10px;
@@ -99,7 +99,7 @@ body {
 .nav-mode-options{
     display:inline-block;
     color:white;
-    background-color:rgb(89, 130, 255);
+    background-color:rgb(247, 181, 83);
     border-radius:15px;
     height:30px;
     width:150px;
@@ -135,7 +135,14 @@ body {
     #location-input{
         width:60%;
     }
+    #location-button{
+        width:40%;
+    }
+    #interaction-mode-button{
+        width:40%;
+    }
     .dropdown-content{
+        transform:translateY(30px);
         grid-template-areas: 
             'walk drive' 
             'bus bike' 
