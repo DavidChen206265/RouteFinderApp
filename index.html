@@ -40,7 +40,7 @@
     <div id="map"></div>
     <div id="everythingbox">
       <div id="topbar">
-        <input id="location-input" type="text" value="Enter Location" />
+        <input id="location-input" type="text" placeholder="Enter Location" />
         <button type="button" onclick="searchLocation()" id="search-button">
           Search
         </button>
@@ -58,14 +58,6 @@
         >
           Navigate
         </button>
-      </div>
-
-      <div class="route-settings">
-        <label class="switch">
-          <input id="showDetails" type="checkbox" onclick="drawRoute()" />
-          <span class="slider round"></span>
-        </label>
-        Show route details
       </div>
 
       <button type="button" onclick="findRoute()" id="calculate-route-button">

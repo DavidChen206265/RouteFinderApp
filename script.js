@@ -125,12 +125,10 @@ function findRoute() {
   cleanMap(false);
   updateRouteInformationDisplay("Calculating route...");
 
-  // 1. If a previous task is running, kill it first!
+  // reset the controller
   if (controller) {
     controller.abort();
   }
-
-  // 2. Create a FRESH controller for the NEW attempt
   controller = new AbortController();
 
   // return if starting point or destination is not selected
@@ -152,13 +150,13 @@ function findRoute() {
   try {
     fetch(
       "https://api.geoapify.com/v1/routing?waypoints=" +
-        startingPoint +
-        "|" +
-        destinationPoint +
-        "&mode=" +
-        navigationMode +
-        "&apiKey=" +
-        GEOAPIFY_API_KEY,
+      startingPoint +
+      "|" +
+      destinationPoint +
+      "&mode=" +
+      navigationMode +
+      "&apiKey=" +
+      GEOAPIFY_API_KEY,
       requestOptions,
     )
       .then((res) => res.json())
@@ -431,12 +429,10 @@ function switchInteractionMode() {
       );
       findRoute();
 
-      // reserve the new nav markers, only remove the view marker
+      // keep the new nav markers, only remove the view marker and search markers
       cleanMap(false);
-      if (viewMarker) {
-        viewMarker.remove();
-        viewMarker = null;
-      } // inner if
+      removeViewMarker();
+      removeSearchResultMarkers();
     } else {
       cleanMap(true);
     } // outer if
@@ -466,9 +462,9 @@ function updateUserLocation() {
         userLng = `${position.coords.longitude}`;
         console.log(
           "updateUserLocation: User location: lat_" +
-            userLat +
-            ", lng_" +
-            userLng,
+          userLat +
+          ", lng_" +
+          userLng,
         );
         resolve();
       },
@@ -497,9 +493,6 @@ function placeViewMarker(lng, lat) {
       <p>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</p>
     `);
 
-    if (!viewMarker.getPopup().isOpen()) {
-      viewMarker.togglePopup();
-    }
   } else {
     // create the popup object
     const markerPopup = new mapboxgl.Popup({ offset: 25 }) // offset lifts it slightly above the pin
@@ -631,6 +624,10 @@ function cleanMap(removeMarkers) {
     map.removeLayer("points-layer");
   }
 
+  if (map.getLayer("poi-labels")) {
+    map.removeLayer("poi-labels");
+  }
+
   // remove map sources
   if (map.getSource("route")) {
     map.removeSource("route");
@@ -639,6 +636,11 @@ function cleanMap(removeMarkers) {
   if (map.getSource("points")) {
     map.removeSource("points");
   }
+
+  if (map.getSource("search-results-source")) {
+    map.removeSource("search-results-source");
+  }
+
 } // cleanMap
 
 function redirectToUserLocation() {
@@ -647,9 +649,9 @@ function redirectToUserLocation() {
       flyToLocation(userLng, userLat);
       console.log(
         "redirectToUserLocation: Redirected to user location: lat_" +
-          userLat +
-          ", lng_" +
-          userLng,
+        userLat +
+        ", lng_" +
+        userLng,
       );
     } // if
   });
@@ -752,15 +754,22 @@ function searchLocation() {
   console.log(`map center: lng_${center.lng}, lat_${center.lat}`);
 
   try {
-    const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&bias=proximity:${center.lng},${center.lat}&filter=circle:${center.lng},${center.lat},5000&limit=20&format=json&apiKey=${GEOAPIFY_API_KEY}`;
+    const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(searchText)}&bias=proximity:${center.lng},${center.lat}&filter=circle:${center.lng},${center.lat},10000&limit=20&format=json&apiKey=${GEOAPIFY_API_KEY}`;
 
     fetch(url, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log("Search Results:", result.results);
 
+        // check whether there are results
+        if (result.results.length === 0) {
+          searchResultsData = null;
+          console.warn("No result found");
+          alert("No result found...");
+          return;
+        }
+
         result.results.forEach((place, index) => {
-          // rank helps you see how 'sure' the API is
           const confidence = place.rank ? place.rank.confidence : "N/A";
           const matchType = place.rank ? place.rank.match_type : "N/A";
 
@@ -772,24 +781,53 @@ function searchLocation() {
 
         searchResultsData = result;
 
+        // place search result markers
         searchResultsData.results.forEach((result) => {
           placeSearchResultMarker(result);
+        });
+
+        const features = result.results.map(place => ({
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [place.lon, place.lat]
+          },
+          'properties': {
+            'name': place.name || place.address_line1
+          }
+        }));
+
+        map.addSource('search-results-source', {
+          'type': 'geojson',
+          'data': { 'type': 'FeatureCollection', 'features': features}
+        });
+
+        map.addLayer({
+          'id': 'poi-labels',
+          'type': 'symbol',
+          'source': 'search-results-source',
+          'layout': {
+            'text-field': ['get', 'name'],
+            'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+            'text-radial-offset': 0.8,
+            'text-justify': 'auto',
+            'text-size': 12
+          },
+          'paint': {
+            'text-color': '#333',
+            'text-halo-color': '#fff',
+            'text-halo-width': 1.5
+          }
+        });
+
+        // zoom out to show all the results
+        map.zoomTo(12, {
+          duration: 2000,
+          offset: [100, 50]
         });
       })
       .catch((error) => console.log("error", error));
 
-    // fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + searchText + "&bias=proximity:" + center.lng + "," + center.lat + "&filter=circle:" + center.lng + "," + center.lat + ",5000&limit=20&format=json&apiKey=" + GEOAPIFY_API_KEY, requestOptions)
-    //   .then((response) => response.json())
-    //   .then((searchResults) => {
-    //     searchResultsData = searchResults;
-
-    //     searchResultsData.results.forEach((result) => {
-    //       placeSearchResultMarker(result);
-    //     });
-
-    //     // deal with results
-    //     console.log(searchResultsData);
-    //   }).catch((error) => console.log(error));
   } catch (error) {
     // clean search results data
     searchResultsData = null;
@@ -806,9 +844,9 @@ function placeSearchResultMarker(result) {
     .setHTML(
       `
         <h4>` +
-        result.name +
-        `</h4>
-        <p>Lat: ${result.lat.toFixed(4)}<br>Lng: ${result.lon.toFixed(4)}</p>
+      result.name +
+      `</h4>
+        <p>${result.address_line2}<br>Type: ${result.result_type}</p>
       `,
     );
 
@@ -819,8 +857,7 @@ function placeSearchResultMarker(result) {
   })
     .setLngLat([result.lon, result.lat])
     .setPopup(markerPopup)
-    .addTo(map)
-    .togglePopup();
+    .addTo(map);
   searchResultMarkers.push(searchResultMarker);
 } // placeSearchResultMarker
 
