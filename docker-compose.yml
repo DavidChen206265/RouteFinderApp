@@ -1,0 +1,20 @@
+services:
+  web:
+    image: nginx:alpine
+    container_name: route-finder-app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/usr/share/nginx/html
+    environment:
+      - MAPBOX_API_KEY=${MAPBOX_API_KEY}
+      - GEOAPIFY_API_KEY=${GEOAPIFY_API_KEY}
+    # 核心逻辑：启动时根据模板生成带有真实 Key 的 config.js
+    command: >
+      /bin/sh -c "
+      cp /usr/share/nginx/html/config.template.js /usr/share/nginx/html/config.js &&
+      sed -i \"s/MAPBOX_TOKEN_PLACEHOLDER/$$MAPBOX_API_KEY/g\" /usr/share/nginx/html/config.js &&
+      sed -i \"s/GEOAPIFY_TOKEN_PLACEHOLDER/$$GEOAPIFY_API_KEY/g\" /usr/share/nginx/html/config.js &&
+      nginx -g 'daemon off;'
+      "
+    restart: always
