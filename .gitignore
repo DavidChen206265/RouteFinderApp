@@ -1,4 +1,5 @@
 # api key
+.env
 # do not ignore the template since GitHub Action is using it
 !config.template.js
 
@@ -9,3 +10,4 @@ Thumbs.db
 *.log
 .temp/
 .cache/
+*.pem
