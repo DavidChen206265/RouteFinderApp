@@ -9,7 +9,7 @@ services:
     environment:
       - MAPBOX_API_KEY=${MAPBOX_API_KEY}
       - GEOAPIFY_API_KEY=${GEOAPIFY_API_KEY}
-    # 核心逻辑：启动时根据模板生成带有真实 Key 的 config.js
+    # generate config.js
     command: >
       /bin/sh -c "
       cp /usr/share/nginx/html/config.template.js /usr/share/nginx/html/config.js &&
