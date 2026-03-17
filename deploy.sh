@@ -1,3 +1,4 @@
+# run ./deploy.sh under the RouteFinderApp's root path
 #!/bin/bash
 # RouteFinderApp Deploy Script
 
