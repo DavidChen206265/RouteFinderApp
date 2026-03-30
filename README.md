@@ -10,6 +10,20 @@ Documentation: *https://apidocs.geoapify.com/*
 
 This document outlines the workflow for contributing to the RouteFinderApp. Following these steps ensures code stability and prevents "crying David" scenarios.
 
+## 0. Dependencies Installation & Setting Up a New Repository
+
+0.1 (No need to do on school computers) Install Git *https://git-scm.com/install/*
+
+0.2 Create a Github account.
+
+0.3 Click the `+` button on the top right of your Github homepage, then `New repository`.
+
+0.4 Setup your repository name. Do not add anything in the "Configuration" section.
+
+0.5 Do 1.1 Configure VS Code Terminal in this tutorial to setup your terminal. 
+
+0.6 In the terminal, run the commands in the `…or create a new repository on the command line` section on your Github project's page. (Copy the whole thing and pasted it into the terminal, then press "Enter" to proceed.) Your project is now setup on Github.
+
 ## 1. Initial Setup (One-time per Project)
 
 ### 1.1 Configure VS Code Terminal
@@ -189,8 +203,8 @@ git branch -d your-branch-name      # deletes the local branch
 
 ```
 const CONFIG = {
-    API_KEY_First: 'the_first_api_key',
-    API_KEY_Second: 'the_second_api_key',
+    API_KEY_FIRST: 'abcde12345',
+    API_KEY_SECOND: 'abcde67890',
     ...
 };
 ```
@@ -213,10 +227,10 @@ config.js
 6. In your main logic file (`script.js`), access the API keys by:
 
 ```
-firstApiKey = CONFIG.API_KEY_First;
+const firstApiKey = CONFIG.API_KEY_FIRST;
 ```
 
-## Testing PWA on Mobile Devices Without GitHub Pages
+## (Option 1) Testing PWA on Mobile Devices Without GitHub Pages 
 
 ### Why
 
@@ -286,3 +300,81 @@ chrome://flags/#unsafely-treat-insecure-origin-as-secure
 ```
 
 8.2 A small "gear" icon will appear on your phone screen. Tap it, and it opens a fully functional console, element inspector, and network tab right inside your mobile browser.
+
+## (Option 2) Hosting PWA on GitHub Pages 
+
+### 1. You need to have "Dealing with API Keys" done and `config.js` in your project.
+
+### 2. Create a new file `config.template.js` in the same path as `config.js`. Copy the content in `config.js` into the new file. Do not put `config.template.js` into `.gitignore`!
+
+### 3. In `config.template.js`, replace the API keys with placeholders.
+
+```
+const CONFIG = {
+    API_KEY_FIRST: 'API_KEY_FIRST_PLACEHOLDER',
+    API_KEY_SECOND: 'API_KEY_SECOND_PLACEHOLDER',
+    ...
+};
+```
+
+### 4. (!!! EXTREMELY IMPORTANT !!!) Protect your API keys!
+
+4.1 Go to your API's token management page, create a new token and name it `GithubOnly`.
+
+4.2 Setup token restrictions to restrict this token to specific URLs. In this case, it should be restricted to `https://your-github-userid.github.io/your-project-name/`
+
+Ex: `https://davidchen206265.github.io/RouteFinderApp/`
+
+4.3 Go to your project's Github page, Settings - Secrets and variables - Actions
+
+4.4 Click the green button `New repository secret`, set "name" as `API_KEY_FIRST_SECRET` for example. Copy your `GithubOnly` token into "Value".
+
+4.5 Create a folder `.github` in your project's root path. Create another folder `workflows` inside `.github`. Create `deploy.yml` in `workflows`.
+
+4.6 In `deploy.yml`:
+
+```
+name: Deploy YourProjectName
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Config File
+        run: |
+          if [ -f config.template.js ]; then
+            cp config.template.js config.js
+            sed -i "s/API_KEY_FIRST_PLACEHOLDER/${{ secrets.API_KEY_FIRST_SECRET }}/g" config.js
+            sed -i "s/API_KEY_SECOND_PLACEHOLDER/${{ secrets.API_KEY_SECOND_SECRET }}/g" config.js
+            
+            sed -i '/config.js/d' .gitignore
+          else
+            echo "Error: config.template.js not found!"
+            exit 1
+          fi
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .
+          branch: gh-pages
+          clean: false
+
+```
+
+Note: Replace `YourProjectName`, `API_KEY_FIRST_PLACEHOLDER`, `API_KEY_FIRST_SECRET`, etc, with your own names.
+
+4.7 Update the change to your project on Github. Enable Github Pages.
+Note: The first time while deploying the project to Pages, there will be an error. No need to worry about it, please go to check the error and allow the secret to be accessed by Actions.
+
+4.8 You could now access your project by Github Pages! There will be a new branch called gh-pages, please do not delete it. It will be updated automatically after merging code into the main branch just like what Pages normally do. 
