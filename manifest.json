@@ -22,5 +22,21 @@
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "screenshots": [
+    {
+      "src": "screenshots/Screenshot1.png",
+      "sizes": "2527x1233",
+      "type": "image/png",
+      "form_factor": "wide",
+      "purpose": "any"
+    },
+    {
+      "src": "screenshots/Screenshot2.png",
+      "sizes": "605x947",
+      "type": "image/png",
+      "purpose": "any"
+    }
+]
+
 }
