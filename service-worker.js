@@ -10,6 +10,8 @@ const STATIC_ASSETS = [
   "./script.js",
   "./manifest.json",
   "./images/icons",
+  "./favicon.ico",
+  "./config.js",
 ];
 
 // Install event: Cache static assets

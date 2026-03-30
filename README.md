@@ -325,6 +325,8 @@ const CONFIG = {
 
 Ex: `https://davidchen206265.github.io/RouteFinderApp/`
 
+### 5 Setup Github Actions
+
 5.1 Go to your project's Github page, Settings - Secrets and variables - Actions
 
 5.2 Click the green button `New repository secret`, set "name" as `API_KEY_FIRST_SECRET` for example. Copy your `GithubOnly` token into "Value".
