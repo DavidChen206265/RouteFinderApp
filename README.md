@@ -303,11 +303,11 @@ chrome://flags/#unsafely-treat-insecure-origin-as-secure
 
 ## (Option 2) Hosting PWA on GitHub Pages 
 
-### 1. You need to have "Dealing with API Keys" done and `config.js` in your project.
+ 1. You need to have "Dealing with API Keys" done and `config.js` in your project.
 
-### 2. Create a new file `config.template.js` in the same path as `config.js`. Copy the content in `config.js` into the new file. Do not put `config.template.js` into `.gitignore`!
+ 2. Create a new file `config.template.js` in the same path as `config.js`. Copy the content in `config.js` into the new file. Do not put `config.template.js` into `.gitignore`!
 
-### 3. In `config.template.js`, replace the API keys with placeholders.
+ 3. In `config.template.js`, replace the API keys with placeholders.
 
 ```
 const CONFIG = {
@@ -325,13 +325,13 @@ const CONFIG = {
 
 Ex: `https://davidchen206265.github.io/RouteFinderApp/`
 
-4.3 Go to your project's Github page, Settings - Secrets and variables - Actions
+5.1 Go to your project's Github page, Settings - Secrets and variables - Actions
 
-4.4 Click the green button `New repository secret`, set "name" as `API_KEY_FIRST_SECRET` for example. Copy your `GithubOnly` token into "Value".
+5.2 Click the green button `New repository secret`, set "name" as `API_KEY_FIRST_SECRET` for example. Copy your `GithubOnly` token into "Value".
 
-4.5 Create a folder `.github` in your project's root path. Create another folder `workflows` inside `.github`. Create `deploy.yml` in `workflows`.
+5.3 Create a folder `.github` in your project's root path. Create another folder `workflows` inside `.github`. Create `deploy.yml` in `workflows`.
 
-4.6 In `deploy.yml`:
+5.4 In `deploy.yml`:
 
 ```
 name: Deploy YourProjectName
@@ -374,7 +374,7 @@ jobs:
 
 Note: Replace `YourProjectName`, `API_KEY_FIRST_PLACEHOLDER`, `API_KEY_FIRST_SECRET`, etc, with your own names.
 
-4.7 Update the change to your project on Github. Enable Github Pages.
+5.5 Update the change to your project on Github. Enable Github Pages.
 Note: The first time while deploying the project to Pages, there will be an error. No need to worry about it, please go to check the error and allow the secret to be accessed by Actions.
 
-4.8 You could now access your project by Github Pages! There will be a new branch called gh-pages, please do not delete it. It will be updated automatically after merging code into the main branch just like what Pages normally do. 
+5.6 You could now access your project by Github Pages! There will be a new branch called gh-pages, please do not delete it. It will be updated automatically after merging code into the main branch just like what Pages normally do. 
