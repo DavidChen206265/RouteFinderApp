@@ -1,6 +1,6 @@
 {
   "id": "/RouteFinderApp/",
-  "short_name": "RoutFinder",
+  "short_name": "RouteFinder",
   "name": "Route Finder",
   "description": "A route finder using free APIs.",
   "icons": [
